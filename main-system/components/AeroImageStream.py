@@ -1,5 +1,4 @@
-<<<<<<< Updated upstream
-=======
+
 from time import sleep
 from picamera import PiCamera
 import os
@@ -58,4 +57,3 @@ class AeroImageStream:
         Close the camera object and release resources.
         """
         self.camera.close()
->>>>>>> Stashed changes
