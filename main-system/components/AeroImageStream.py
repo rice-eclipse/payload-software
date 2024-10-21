@@ -1,4 +1,3 @@
-
 from time import sleep
 from picamera import PiCamera
 import os
@@ -12,27 +11,30 @@ class AeroImageStream:
     methods for capturing and storing images.
     """
 
-    def __init__(self, storagepath, xres=1920, yres=1080):
+    def __init__(self, storagepath, configs):
         """
         Initialize the AeroImageStream object.
 
         Args:
             storagepath (str): The directory path where captured images will be stored.
-            xres (int, optional): The horizontal resolution of the camera. Defaults to 1920.
-            yres (int, optional): The vertical resolution of the camera. Defaults to 1080.
+            configs (dict): A dictionary containing configuration settings for the camera.
+                'xres' (int): The horizontal resolution of the camera.
+                'yres' (int): The vertical resolution of the camera.
+                'iso' (int): The ISO setting for the camera. 100 or 200 in daylight, 400 or 800 at night.
+                'exposure_mode' (str): The exposure mode for the camera. "off" or "on".
         """
         self.storagepath = storagepath
-        self.xres = xres
-        self.yres = yres
+        self.xres = configs['xres']
+        self.yres = configs['yres']
         self.camera = PiCamera()
         self.camera.resolution = (self.xres, self.yres)
-        self.camera.iso = 100
+        self.camera.iso = configs['iso']
         sleep(2)
         self.camera.shutter_speed = self.camera.exposure_speed
-        self.camera.exposure_mode = 'off'
+        self.camera.exposure_mode = configs['exposure_mode']
+        whitebalance = self.camera.awb_gains
         self.camera.awb_mode = 'off'
-        g = self.camera.awb_gains
-        self.camera.awb_gains = g
+        self.camera.awb_gains = whitebalance
 
     def capture_image(self, altitude, angle, time):
         """
@@ -48,6 +50,7 @@ class AeroImageStream:
         """
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
+            
         filename = f"{self.storagepath}/{altitude}&{angle}&{time}.jpg"
         self.camera.capture(filename)
         return filename
@@ -55,5 +58,8 @@ class AeroImageStream:
     def close(self):
         """
         Close the camera object and release resources.
+
+        This method should be called when the AeroImageStream object is no longer needed
+        to ensure proper cleanup of the camera resources.
         """
         self.camera.close()
