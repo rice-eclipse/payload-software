@@ -10,7 +10,7 @@ class AeroImageStream:
         self.camera = PiCamera()
         self.camera.resolution = (self.xres, self.yres)
         self.camera.iso = 100
-        sleep(2)  # Allow the camera to warm up
+        sleep(2)
         self.camera.shutter_speed = self.camera.exposure_speed
         self.camera.exposure_mode = 'off'
         self.camera.awb_mode = 'off'
