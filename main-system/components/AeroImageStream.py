@@ -11,19 +11,19 @@ class AeroImageStream:
     methods for capturing and storing images.
     """
 
-    def __init__(self, storagepath, configs):
+    def __init__(self, configs):
         """
         Initialize the AeroImageStream object.
 
         Args:
-            storagepath (str): The directory path where captured images will be stored.
             configs (dict): A dictionary containing configuration settings for the camera.
+                'storagepath (str): The directory path where captured images will be stored.
                 'xres' (int): The horizontal resolution of the camera.
                 'yres' (int): The vertical resolution of the camera.
                 'iso' (int): The ISO setting for the camera. 100 or 200 in daylight, 400 or 800 at night.
                 'exposure_mode' (str): The exposure mode for the camera. "off" or "on".
         """
-        self.storagepath = storagepath
+        self.storagepath = configs['storagepath']
         self.xres = configs['xres']
         self.yres = configs['yres']
         self.camera = PiCamera()
@@ -50,7 +50,7 @@ class AeroImageStream:
         """
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
-            
+
         filename = f"{self.storagepath}/{altitude}&{angle}&{time}.jpg"
         self.camera.capture(filename)
         return filename
