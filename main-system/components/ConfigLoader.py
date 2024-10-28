@@ -7,19 +7,19 @@ class ConfigLoader:
     
     def fetch_imaging_configs(self):
         """
-        returns all imaging configs
+        Returns all configs related to the camera imaging
         """
         return self.loaded_configs["imaging_configs"]
 
     def fetch_exstate_configs(self):
         """
-        returns all exteral configs
+        Returns all exteral state configs
         """
         return self.loaded_configs["exstate_configs"]
 
     def fetch_all_configs(self):
         """
-        returns all configs in a single dictionary
+        Returns all configs in a single dictionary
         """
         imaging = self.loaded_configs["imaging_configs"]
         exstate = self.loaded_configs["exstate_configs"]

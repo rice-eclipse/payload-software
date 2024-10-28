@@ -7,8 +7,10 @@
         "exposure_mode" : "on"
     },
     "exstate_configs" : {
-        "start_alt" : 100,
-        "start_image_alt" : 10000,
-        "max_angle" : 0.69
+        "max_angle" : 0.69,
+        "ground_alt" : 100,
+        "altitude_threshold" : 10000,
+        "accel_threshold": 3,
+        "time_threshold": 2000
     }
 }
