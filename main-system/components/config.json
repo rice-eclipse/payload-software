@@ -1,0 +1,14 @@
+{
+    "imaging" : {
+        "filepath" : "ricericerice",
+        "xres" : 400,
+        "yres" : 400,
+        "iso" : 100,
+        "exposure_mode" : "on"
+    },
+    "exstate" : {
+        "start_alt" : 100,
+        "start_image_alt" : 10000,
+        "max_angle" : 0.69
+    }
+}
