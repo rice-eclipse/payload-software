@@ -5,18 +5,6 @@ import adafruit_bmp3xx
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 
 class AltimeterReader:
-<<<<<<< HEAD
-    altitude_list = []
-    def __init__(self):
-        self.altitude_list = []
-    def get_curr_altitude(self, timeclock):
-        #write code to fetch the current altitude
-        #write code to change units
-        #write code to change to float (?)
-        #add current altitude to altitude_list
-        #return current altitude
-        pass
-=======
 
     def __init__(self, timeclock):
         if i2C is None:
@@ -34,7 +22,6 @@ class AltimeterReader:
         self.store_alti(curr_altitude)
         return curr_altitude
     
->>>>>>> aede01a (Changed AltimeterReader to have methods specific to BMP388 sensor.)
     def get_last_altitude(self):
         if len(self.pastAlti) != 0:
             return str(self.pastAlti[-1]) + "m"
