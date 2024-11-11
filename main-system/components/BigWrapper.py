@@ -36,6 +36,7 @@ class BigWrapper:
 
         while sleep_condition:
             curr_alt = self.alt_reader.get_curr_altitude()
+            # If we're coming down and we're at or below threshold, enter active state.
             if (curr_alt - last_alt < 0) and (curr_alt <= altitude_threshold):
                 sleep_condition = False
             last_alt = curr_alt
@@ -45,6 +46,7 @@ class BigWrapper:
             if curr_acc >= accel_threshold and self.time_clock.has_started() != False:
                 self.time_clock.start_clock()
                 
+            # Once the accelerometer hsa activated the timer countdown, if the timer exceeds the threshold, enter active state. 
             if (self.time_clock.get_curr_deltatime() >= time_threshold):
                 sleep_condition = False
                 
@@ -52,22 +54,28 @@ class BigWrapper:
         
         altitude_exit_cond = False
         accel_exit_cond = False
+        accel_zero_count = 0
+        
         while run_condition:
             
-            # Sets altitude exit to true when we're barely above the ground
             curr_alt = self.alt_reader.get_curr_altitude()
             alt_delta_grnd = curr_alt - grnd_alt
             
+            # Sets altitude exit to true when we're barely above the ground (i.e. about to land)
             if (alt_delta_grnd < 10):
                 altitude_exit_cond = True
                 
             last_alt = curr_alt
             
-            # Sets accel exit to true when the acceleration is less than .05 m/s^2 for 20 seconds
+            # Sets accel exit to true when the acceleration is less than .05 m/s^2 for some amount of seconds
             if (self.accel_reader < 0.05 and self.accel_reader > -0.05):
-                # Implement this later
-                pass
+                # waits for (20 * time to run the while loop) to make sure the acceleration is actually 0
+                if accel_zero_count >= 20:
+                    accel_exit_cond = True
+                else:
+                    accel_zero_count += 1
             
+            # check when to stop taking images (special case when landing on a hill or tree)
             if (altitude_exit_cond == True and accel_exit_cond == True):
                 run_condition = False
             
@@ -76,4 +84,6 @@ class BigWrapper:
         self.image_stream.close()
     
     def active_exec(self, curr_alt, curr_angle, timestamp):
+        # implement some amount of file management?
+       
         self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
