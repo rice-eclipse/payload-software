@@ -49,7 +49,7 @@ class StorageManager:
                         os.remove(os.path.join(self.path, file))
                     elif angle > self.angle_max_threshold or angle < self.angle_min_threshold:
                         os.remove(os.path.join(self.path, file))
-        
+                # exception catch just in case the file is not in the correct format
                 except ValueError:
                     print(f"Skipping file with invalid format: {file}")
 
