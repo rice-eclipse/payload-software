@@ -2,7 +2,7 @@ class AltimeterReader:
     altitude_list = []
     def __init__(self):
         self.altitude_list = []
-    def get_curr_altitude(self):
+    def get_curr_altitude(self, timeclock):
         #write code to fetch the current altitude
         #write code to change units
         #write code to change to float (?)
