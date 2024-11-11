@@ -36,7 +36,7 @@ class TimeClock():
 
         curr_time = time.time()
         deltatime = (curr_time-self.prev_time)*1000
-        self.prev_time=curr_time
+        self.prev_time = curr_time
         return int(deltatime)
     
     def get_curr_timestamp(self):

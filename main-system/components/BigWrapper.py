@@ -41,12 +41,12 @@ class BigWrapper:
                 sleep_condition = False
             last_alt = curr_alt
             
-            # Check to start timer once launch happens
+            # Check to start timer once launch happens based on change in acceleration.
             curr_acc = self.accel_reader.get_curr_accel()
             if curr_acc >= accel_threshold and self.time_clock.has_started() != False:
                 self.time_clock.start_clock()
                 
-            # Once the accelerometer hsa activated the timer countdown, if the timer exceeds the threshold, enter active state. 
+            # Once the accelerometer has activated the timer countdown, if the timer exceeds the threshold, enter active state. 
             if (self.time_clock.get_curr_deltatime() >= time_threshold):
                 sleep_condition = False
                 
@@ -69,13 +69,14 @@ class BigWrapper:
             
             # Sets accel exit to true when the acceleration is less than .05 m/s^2 for some amount of seconds
             if (self.accel_reader < 0.05 and self.accel_reader > -0.05):
-                # waits for (20 * time to run the while loop) to make sure the acceleration is actually 0
+                # Waits for (20 * time to run the while loop) to make sure the acceleration is actually ~0.
                 if accel_zero_count >= 20:
                     accel_exit_cond = True
                 else:
-                    accel_zero_count += 1
+                    accel_zero_count += self.time_clock.get_prev_deltatime()
             
-            # check when to stop taking images (special case when landing on a hill or tree)
+            # Check when to stop taking images. 
+            # TODO: Add special case when landing on a hill or tree.
             if (altitude_exit_cond == True and accel_exit_cond == True):
                 run_condition = False
             
