@@ -162,5 +162,5 @@ cython_debug/
 #.idea/
 
 # Local Development Environment Files (Project-Added)
-# .DS_STORE
+.DS_STORE
 .idea/
