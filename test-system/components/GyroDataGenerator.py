@@ -27,6 +27,9 @@ class GyroDataGenerator:
 
         angle_data = zip(times, sway_angles)
         path =  r'./gen_gyro_data.csv'
+        # This bottom is what we need to eventually do.
+        # However, it does not work for some reason. Fix later.
+        # path =  r'../generatedData/gen_gyro_data.csv'
         print("PATH: ", path)
         with open(path, 'w') as f:
             writer = csv.writer(f)
