@@ -55,7 +55,8 @@ class StorageManager:
 
     def clean_storage(self):
         """
-        Check the storage usage of the given path. If the storage usage is above 80%, clean the images in the path by calling clean_images. Return True if the storage has been cleaned, False otherwise.
+        Check the storage usage of the given path. If the storage usage is above 80%, 
+        clean the images in the path by calling clean_images.
 
         Parameters
         ----------
