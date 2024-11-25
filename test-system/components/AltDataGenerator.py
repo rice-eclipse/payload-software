@@ -21,7 +21,20 @@ class AltDataGenerator:
         self.path = r'.\test-system\historicalData\HistoricalSpaceport2024Data.csv'
         self.out = r'.\test-system\generatedData\GenAltData.csv'
         self.alt_map = {}
-        pass
+
+        # Input dummy data for being on the ground pre-launch.
+        for i in range(10):
+            time = i * 1000
+            alt = 0
+            self.alt_map[time] = alt
+
+        self.pull_data()
+
+        # Input dummy data for being on the ground post-launch.
+        for i in range(405, 415):
+            time = i * 1000
+            alt = 0
+            self.alt_map[time] = alt
 
     def pull_data(self):
         """
@@ -35,14 +48,16 @@ class AltDataGenerator:
         -------
         None
         """
+
         with (open(self.path, 'r')) as f:
             reader = csv.DictReader(f)
             for lines in reader:
-                time = int(float(lines['time']) * 1000)
-                alt = (float(lines['height']) * 3.2808)
-                # print("time:",time,"alt:",alt)
-                self.alt_map[time] = alt
-                
+                pre_proc_time = int(float(lines['time']) * 1000)
+                if (pre_proc_time >= 0):
+                    time = pre_proc_time + 10000
+                    alt = (float(lines['height']) * 3.2808)
+                    # print("time:",time,"alt:",alt)
+                    self.alt_map[time] = alt        
 
     def save_alt_data(self):        
         """
@@ -64,5 +79,4 @@ class AltDataGenerator:
 
 # run this to generate alt data for testing
 altgen = AltDataGenerator()
-altgen.pull_data()
 altgen.save_alt_data()

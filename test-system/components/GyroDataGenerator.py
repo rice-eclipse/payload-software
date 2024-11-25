@@ -4,7 +4,7 @@ import csv
 
 class GyroDataGenerator:
     def __init__(self):
-        self.gen_data_dir = r'/generatedData'
+        self.path = r'.\test-system\generatedData\GenGyroData.csv'
         self.duration = 120
         self.frequency = 0.3
         self.damping = 0.03
@@ -21,17 +21,11 @@ class GyroDataGenerator:
         return times, sway_angles
         
     def save_angle_data(self, times, sway_angles):
-        # convert times from seconds to milliseconds
-        # times = int(times * 1000)
-        times = [int(time * 1000) for time in times]
+        # convert times from seconds to milliseconds + offset
+        times = [int(time * 1000 + 358400) for time in times]
 
         angle_data = zip(times, sway_angles)
-        path =  r'./gen_gyro_data.csv'
-        # This bottom is what we need to eventually do.
-        # However, it does not work for some reason. Fix later.
-        # path =  r'../generatedData/gen_gyro_data.csv'
-        print("PATH: ", path)
-        with open(path, 'w') as f:
+        with open(self.path, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(['time', 'angle'])
             writer.writerows(angle_data)
