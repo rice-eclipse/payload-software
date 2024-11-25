@@ -24,7 +24,7 @@ def plot_dual_axis_csv(file1, file2):
         fig, ax1 = plt.subplots(figsize=(8, 6))
 
         # Plot data from the first CSV file on the primary y-axis
-        ax1.plot(x1, y1, label=f"{data1.columns[1]} (from {os.path.basename(file1)})", color='blue', marker='o')
+        ax1.plot(x1, y1, label=f"{data1.columns[1]} (from {os.path.basename(file1)})", color='blue')
         ax1.set_xlabel(data1.columns[0])
         ax1.set_ylabel(data1.columns[1], color='blue')
         ax1.tick_params(axis='y', labelcolor='blue')
@@ -32,7 +32,7 @@ def plot_dual_axis_csv(file1, file2):
 
         # Create a second y-axis for the second CSV file
         ax2 = ax1.twinx()
-        ax2.plot(x2, y2, label=f"{data2.columns[1]} (from {os.path.basename(file2)})", color='green', marker='x')
+        ax2.plot(x2, y2, label=f"{data2.columns[1]} (from {os.path.basename(file2)})", color='green')
         ax2.set_ylabel(data2.columns[1], color='green')
         ax2.tick_params(axis='y', labelcolor='green')
 
@@ -53,11 +53,11 @@ def plot_dual_axis_csv(file1, file2):
         print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
-    # Prompt the user for the file paths
+    # hard code the file paths, (the line below it is for user input csv files)
     file1 = r'./test-system/generatedData/GenAccelData.csv'
-    # input("Enter the path to the first CSV file: ").strip()
+    # file1 = input("Enter the path to the first CSV file: ").strip()
     file2 = r'./test-system\generatedData\GenAltData.csv'
-    # input("Enter the path to the second CSV file: ").strip()
+    # file2 = input("Enter the path to the second CSV file: ").strip()
 
     # Validate file existence
     if not os.path.isfile(file1):
