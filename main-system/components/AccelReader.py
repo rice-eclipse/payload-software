@@ -5,29 +5,28 @@ import adafruit_lsm9ds1
 # uses board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 
-
-
 class AccelReader:
 
     def __init__(self, timeclock):
-        #initalizes the accelerometer-reader class
-        #Uses the i2c pins. Edit below to change
+        # Initalizes the accelerometer-reader class
+        # Uses the i2c pins. Edit below to change
         i2c = board.I2C()
         self.sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
         self.timer = timeclock
-        self.pastAccel = []
-
-    
-    def store_accel(self, accel):
-        #stores the last read acceleration
-        self.pastAccel.append(accel)
+        # This might be better to start off at None or 0. Discuss more later.
+        self.last_read_accel = float('-inf')
+        self.curr_accel = float('-inf')
 
     def get_curr_accel(self):
-        #get current acceleration in m/s^2 units
-        curr_accel = self.sensor.acceleration[2]
-        self.store_accel(curr_accel)
-        return curr_accel
+        # Get current acceleration in m/s^2 units
+        self.store_accel(self.curr_accel)
+        self.curr_accel = self.sensor.acceleration[2]
+        return self.curr_accel
     
     def get_last_accel(self):
-        #get the last recorded acceleration
-        return self.pastAccel[-1]
+        # Get the last recorded acceleration
+        return self.last_read_accel
+    
+    def store_accel(self, accel):
+        # Stores the last read acceleration
+        self.last_read_accel = accel

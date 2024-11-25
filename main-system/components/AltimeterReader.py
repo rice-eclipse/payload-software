@@ -10,21 +10,22 @@ class AltimeterReader:
         if i2C is None:
             i2C = board.I2C()
         self.sensor = adafruit_bmp3xx.BMP3xx_I2C(i2c)
-        self.pastAlti = []
-        self.sensor.pressure_oversampling = 8  # takes 8 samples and average them to get pressure each time 
-        self.timer = timeclock  # object for getting time
+        # This might be better to start off at None or 0. Discuss more later.
+        self.last_read_alt = float('-inf')
+        self.curr_alt = float('-inf')
+        # This will make the reader take 8 samples and average them to get pressure each time 
+        self.sensor.pressure_oversampling = 8
+        # Object for getting time. Not utilized in this reader, but kept for standardization with simulated readers.  
+        self.timer = timeclock
 
-    def store_alti(self, alti):
-        self.pastAlti.append(alti)
 
     def get_curr_altitude(self):  # gets current altitude in meters and stores it
-        curr_altitude = self.sensor.altitude
-        self.store_alti(curr_altitude)
-        return curr_altitude
+        self.store_alt(self.curr_alt)
+        self.curr_alt = self.sensor.altitude
+        return self.curr_alt
     
     def get_last_altitude(self):
-        if len(self.pastAlti) != 0:
-            return str(self.pastAlti[-1]) + "m"
-        else:
-            return "No data"
-        
+        return self.last_read_alt
+
+    def store_alt(self, alt):
+        self.last_read_alt = alt
