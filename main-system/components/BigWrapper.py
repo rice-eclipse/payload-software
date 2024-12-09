@@ -1,90 +1,164 @@
 import ConfigLoader
-import AltimeterReader
-import GyroscopeReader
-import AccelReader
 import TimeClock
 import AeroImageStream
 import StorageManager
 
 class BigWrapper:
-    def __init__(self):
+    def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
+        # The configs object is broken down into two big config objects that are nested within the overall configs object
+        # and some miscellaneous configs. 
         self.config_loader = ConfigLoader()
+        # Load the entire config object.
         self.configs = self.config_loader.fetch_all_configs()
+        # Load the nested configs for the imaging process.
         self.image_configs = self.config_loader.fetch_imaging_configs()
+        # Load the nested configs for the deployment process.
         self.exstate_configs = self.config_loader.fetch_extstate_configs()
+        self.debug_mode = self.configs["debug_mode"]
         
-        self.alt_reader = AltimeterReader() 
-        self.gyro_reader = GyroscopeReader()
-        self.accel_reader= AccelReader()
+        # Note: These create objects of the class passed in via args.
+        # On a static test run, these would be the simulated data reader classes while in a live run, these would be the real sensor readers.
+        # The sensor_timeclock is only utilized for the simulated data readers but also gets passed in to the real sensor readers.
+        self.sensor_timeclock = TimeClock()
+        self.alt_reader = AltimeterReader(self.sensor_timeclock) 
+        self.gyro_reader = GyroscopeReader(self.sensor_timeclock)
+        self.accel_reader= AccelReader(self.sensor_timeclock)
         
         self.image_stream = AeroImageStream(self.image_configs)
-        self.time_clock = TimeClock()
+        # This time clock is used to track the timing of the entire launch process.
+        # It is supposed to be started via a check with the AccelReader. If a large enough acceleration is detected,
+        # the rocket is considered to have started the flight and the timer starts. Based off that, if the timer has
+        # reached a certain time without exiting hibernation mode, then exit hibernation mode and enter active mode.
+        # However, if the timer for some reason failed to be activated by the AccelReader check, then start it 
+        # when the hibernation exit condition is reached via a check to the AltReader, then start it then to prevent
+        # an error with code that uses the timer for the timestamp, and mark that it was a delayed start.
+        self.timeclock = TimeClock()
     
     def run(self):
         sleep_condition = True
         run_condition = False
         
-        grnd_alt = self.exstate_configs["ground_alt"]
-        altitude_threshold = self.exstate_configs["altitude_threshold"]
-        accel_threshold = self.exstate_configs["accel_threshold"]
-        time_threshold = self.exstate_configs["time_threshold"]
+        ground_alt = self.exstate_configs["ground_alt"]
+        altitude_threshold = self.exstate_configs["sleep_exit_altitude_threshold"]
+        accel_threshold = self.exstate_configs["sleep_exit_accel_threshold"]
+        time_threshold = self.exstate_configs["sleep_exit_time_threshold"]
         
         last_alt = self.exstate_configs["ground_alt"]
         curr_alt = self.alt_reader.get_curr_altitude()
         curr_angle = self.gyro_reader.get_curr_angle()
-        alt_delta_grnd = curr_alt - grnd_alt
+        alt_to_ground_delta = curr_alt - ground_alt
+
+        self.sensor_timeclock.start_clock()
+
+        if (self.debug_mode == True):
+                print('===MAIN SOFTWARE SYSTEM PROGRAM START===')
+                print('Ground Altitude:', ground_alt)
+                print('Initial Altitude:', curr_alt)
+                print('Accel Reading:', curr_acc)
+                print('Hibernation Status:', sleep_condition)
+                print('Current Timer Start Status:', self.timeclock.started)
+                if (self.timeclock.started == True):
+                    print('    Current Timer Time:', self.timeclock.get_curr_deltatime())
 
         while sleep_condition:
+            # Fetch current altitude reading.
             curr_alt = self.alt_reader.get_curr_altitude()
+            alt_to_ground_delta = curr_alt - ground_alt
+
             # If we're coming down and we're at or below threshold, enter active state.
             if (curr_alt - last_alt < 0) and (curr_alt <= altitude_threshold):
                 sleep_condition = False
+                if self.timeclock.started != True:
+                    print('Delayed Timer Start')
+                    self.timeclock.start_clock()
             last_alt = curr_alt
             
-            # Check to start timer once launch happens based on change in acceleration.
+            # Check to start timer once launch happens based on if a large enough change in acceleration occurred.
             curr_acc = self.accel_reader.get_curr_accel()
-            if curr_acc >= accel_threshold and self.time_clock.has_started() != False:
-                self.time_clock.start_clock()
+            if curr_acc >= accel_threshold and self.timeclock.has_started() != False:
+                self.timeclock.start_clock()
                 
             # Once the accelerometer has activated the timer countdown, if the timer exceeds the threshold, enter active state. 
-            if (self.time_clock.get_curr_deltatime() >= time_threshold):
+            if (self.timeclock.get_curr_deltatime() >= time_threshold):
                 sleep_condition = False
                 
-            alt_delta_grnd = curr_alt - grnd_alt
+            if (self.debug_mode == True):
+                print('===SINGLE HIBERNATION CYCLE===')
+                print('Altitude Reading:', curr_alt)
+                print('Accel Reading:', curr_acc)
+                print('Hibernation Status:', sleep_condition)
+                print('Current Timer Start Status:', self.timeclock.started)
+                if (self.timeclock.started == True):
+                    print('    Current Timer Time:', self.timeclock.get_curr_deltatime())
         
+        # Set active state exit conditions to False upon entry into active state.
         altitude_exit_cond = False
         accel_exit_cond = False
         accel_zero_count = 0
+
+        run_condition = True
         
         while run_condition:
             
             curr_alt = self.alt_reader.get_curr_altitude()
-            alt_delta_grnd = curr_alt - grnd_alt
+            alt_to_ground_delta = curr_alt - ground_alt
             
             # Sets altitude exit to true when we're barely above the ground (i.e. about to land)
-            if (alt_delta_grnd < 10):
+            if (alt_to_ground_delta < 10):
                 altitude_exit_cond = True
                 
             last_alt = curr_alt
             
-            # Sets accel exit to true when the acceleration is less than .05 m/s^2 for some amount of seconds
+            # Accumulates time spent while the acceleration is less than .05 m/s^2.
             if (self.accel_reader < 0.05 and self.accel_reader > -0.05):
-                # Waits for (20 * time to run the while loop) to make sure the acceleration is actually ~0.
+                # Waits for 20 seconds of 0 acceleration time to be accumulated to make sure the acceleration is actually ~0.
                 if accel_zero_count >= 20:
                     accel_exit_cond = True
                 else:
-                    accel_zero_count += self.time_clock.get_prev_deltatime()
+                    accel_zero_count += self.timeclock.get_prev_deltatime()
             
             # Check when to stop taking images. 
             # TODO: Add special case when landing on a hill or tree.
             if (altitude_exit_cond == True and accel_exit_cond == True):
                 run_condition = False
             
-            self.active_exec(curr_alt, curr_angle, self.time_clock.get_curr_timestamp())
-            
+            # Call the code to conduct all of the operations we want to do for a single active state cycle.
+            self.active_exec(curr_alt, curr_angle, self.timeclock.get_curr_timestamp())
+
+            if (self.debug_mode == True):
+                print('===SINGLE ACTIVE STATE CYCLE===')
+                print('Altitude Reading:', curr_alt)
+                print('Angle Reading:', curr_angle)
+                print('Accel Reading:', curr_acc)
+                print('Active State Status:', run_condition)
+                print('Current Timer Start Status:', self.timeclock.started)
+                if (self.timeclock.started == True):
+                    print('    Current Timer Time:', self.timeclock.get_curr_deltatime())
+                print('0 Accel Time Accumulated:', accel_zero_count)
+
+        # Call the method on the AeroImageStream to close the capture after active state exit.  
         self.image_stream.close()
+
+        if (self.debug_mode == True):
+            print('===MAIN SOFTWARE SYSTEM FULL EXIT===')
+            print('Last Altitude Reading:', curr_alt)
+            print('Last Angle Reading:', curr_angle)
+            print('Last Accel Reading:', curr_acc)
+            print('Hibernation Status:', sleep_condition)
+            print('Active State Status:', run_condition)
+            print('Current Timer Start Status:', self.timeclock.started)
+            if (self.timeclock.started == True):
+                print('    Current Timer Time:', self.timeclock.get_curr_deltatime())
     
     def active_exec(self, curr_alt, curr_angle, timestamp):
-        # implement some amount of file management?
        
         self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
+
+        if (self.debug_mode == True):
+            print('===SINGLE IMAGE CAPTURED===')
+            print('Image Altitude:', curr_alt)
+            print('Image Angle:', curr_angle)
+            print('Current Timer Start Status:', self.timeclock.started)
+            if (self.timeclock.started == True):
+                print('    Current Timer Time:', self.timeclock.get_curr_deltatime())
+            print('Image Timestamp:', timestamp)
