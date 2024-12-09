@@ -23,7 +23,7 @@ class AeroImageStream:
                 'iso' (int): The ISO setting for the camera. 100 or 200 in daylight, 400 or 800 at night.
                 'exposure_mode' (str): The exposure mode for the camera. "off" or "on".
         """
-        self.storagepath = configs['storagepath']
+        self.storagepath = configs['filepath']
         self.xres = configs['xres']
         self.yres = configs['yres']
         self.camera = PiCamera()
