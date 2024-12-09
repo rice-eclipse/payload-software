@@ -3,14 +3,15 @@
         "filepath" : "ricericerice",
         "xres" : 400,
         "yres" : 400,
-        "iso" : 100,
+        "iso" : 600,
         "exposure_mode" : "on"
     },
     "exstate_configs" : {
-        "max_angle" : 0.69,
-        "ground_alt" : 100,
-        "altitude_threshold" : 10000,
-        "accel_threshold": 3,
-        "time_threshold": 2000
-    }
+        "imaging_max_angle" : 0.69,
+        "ground_alt" : 0,
+        "sleep_exit_altitude_threshold" : 1800,
+        "sleep_exit_accel_threshold": 96.5,
+        "sleep_exit_time_threshold": 2000
+    },
+    "debug_mode": true
 }
