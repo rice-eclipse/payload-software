@@ -3,7 +3,7 @@ import csv
 class SimAltReader:
     def __init__(self, timeclock):
         self.timer = timeclock
-        self.path = r'../generatedData/GenAltData'
+        self.path = r'../generatedData/GenAltData.csv'
         self.time_keys = []
         self.alt_map = {}
 
@@ -20,7 +20,7 @@ class SimAltReader:
         self.curr_alt = float('-inf')
 
     def get_curr_altitude(self):
-        curr_time = self.timer.get_time()
+        curr_time = self.timer.get_curr_deltatime()
         
         for i in range(self.curr_time_index, len(self.time_keys)):
             if (self.time_keys[i] > curr_time):

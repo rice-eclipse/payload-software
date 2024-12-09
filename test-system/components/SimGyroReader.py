@@ -3,7 +3,7 @@ import csv
 class SimGyroReader:
     def __init__(self, timeclock):
         self.timer = timeclock
-        self.path = r'../generatedData/GenGyroData'
+        self.path = r'../generatedData/GenGyroData.csv'
         self.time_keys = []
         self.angle_map = {}
 
@@ -11,7 +11,7 @@ class SimGyroReader:
             reader = csv.DictReader(f)
             for lines in reader:
                 time = int(float(lines['time']))
-                angle = float(lines['height'])
+                angle = float(lines['angle'])
                 self.time_keys.append(time)
                 self.angle_map[time] = angle
 
@@ -20,7 +20,7 @@ class SimGyroReader:
         self.curr_angle = float('-inf')
 
     def get_curr_angle(self):
-        curr_time = self.timer.get_time()
+        curr_time = self.timer.get_curr_deltatime()
         
         for i in range(self.curr_time_index, len(self.time_keys)):
             if (self.time_keys[i] > curr_time):

@@ -3,7 +3,7 @@ import csv
 class SimAccelReader:
     def __init__(self, timeclock):
         self.timer = timeclock
-        self.path = r'../generatedData/GenAccelData'
+        self.path = r'../generatedData/GenAccelData.csv'
         self.time_keys = []
         self.accel_map = {}
 
@@ -11,7 +11,7 @@ class SimAccelReader:
             reader = csv.DictReader(f)
             for lines in reader:
                 time = int(float(lines['time']))
-                accel = float(lines['height'])
+                accel = float(lines['acceleration'])
                 self.time_keys.append(time)
                 self.accel_map[time] = accel
 
@@ -20,7 +20,7 @@ class SimAccelReader:
         self.curr_accel = float('-inf')
 
     def get_curr_accel(self):
-        curr_time = self.timer.get_time()
+        curr_time = self.timer.get_curr_deltatime()
         
         for i in range(self.curr_time_index, len(self.time_keys)):
             if (self.time_keys[i] > curr_time):
