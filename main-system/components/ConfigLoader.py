@@ -11,7 +11,7 @@ class ConfigLoader:
         """
         return self.loaded_configs["imaging_configs"]
 
-    def fetch_exstate_configs(self):
+    def fetch_extstate_configs(self):
         """
         Returns all exteral state configs
         """
@@ -21,10 +21,10 @@ class ConfigLoader:
         """
         Returns all configs in a single dictionary
         """
-        imaging = self.loaded_configs["imaging_configs"]
-        exstate = self.loaded_configs["exstate_configs"]
+        # imaging = self.loaded_configs["imaging_configs"]
+        # exstate = self.loaded_configs["exstate_configs"]
 
-        return imaging | exstate
+        return self.loaded_configs 
 
 # config = ConfigLoader("main-system\components\config.json")
 # print(config.fetch_all_configs())
