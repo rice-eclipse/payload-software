@@ -1,11 +1,4 @@
-# Simulation 3 (Up to date)
-# 1654 data points written for 4 variables.
-# Simulation warnings:
-#   Recovery device deployment at high speed (98.4 ft/s)
-#
-# Time (s),Altitude (ft),Vertical velocity (ft/s),Vertical acceleration (ft/s²)
-# Event IGNITION occurred at t=0 seconds
-# Event LAUNCH occurred at t=0 seconds
+#time,altitude,velocity,acceleration
 0.01,-0.002,-0.3,-30.012
 0.02,-0.001,-0.258,-25.806
 0.03,-0.001,-0.216,-21.6
