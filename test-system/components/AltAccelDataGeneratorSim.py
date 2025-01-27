@@ -16,6 +16,7 @@ os.makedirs(output_dir, exist_ok=True)
 try:
     extracted_altitude_data = []
     extracted_acceleration_data = []
+    last_time = 0
 
     with open(input_file, 'r') as infile:
         reader = csv.reader(infile)
@@ -28,23 +29,30 @@ try:
                     
                     extracted_altitude_data.append([time, altitude])
                     extracted_acceleration_data.append([time, acceleration])
+                    last_time = time
                 except (ValueError, IndexError) as e:
                     print(f"Error processing row: {row}. Error: {e}")
+
+    # Add 20 seconds of zeros at the end
+    for i in range(1, 21):  # 20 seconds
+        time = last_time + i * 1000  # Increment by 1 second (1000 ms) each time
+        extracted_altitude_data.append([time, 0])
+        extracted_acceleration_data.append([time, 0])
 
     # Write extracted data to files
     with open(output_altitude, 'w', newline='') as alt_file:
         writer = csv.writer(alt_file)
-        writer.writerow(['time (ms)', 'altitude (ft)'])  # Write header
+        writer.writerow(['time ', 'altitude'])  # Write header
         writer.writerows(extracted_altitude_data)
 
     with open(output_acceleration, 'w', newline='') as acc_file:
         writer = csv.writer(acc_file)
-        writer.writerow(['time (ms)', 'acceleration (ft/s^2)'])  # Write header
+        writer.writerow(['time ', 'acceleration'])  # Write header
         writer.writerows(extracted_acceleration_data)
 
-    print(f"\nfiles saved in '{output_dir}'")
+    print(f"\nFiles saved in '{output_dir}'")
 
 except FileNotFoundError:
-    print(f"file not found: '{input_file}'")
+    print(f"File not found: '{input_file}'")
 except Exception as e:
-    print(f"oops: {e}")
+    print(f"An error occurred: {e}")
