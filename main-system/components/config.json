@@ -9,9 +9,15 @@
     "exstate_configs" : {
         "imaging_max_angle" : 0.69,
         "ground_alt" : 0,
-        "sleep_exit_altitude_threshold" : 1800,
-        "sleep_exit_accel_threshold": 96.5,
-        "sleep_exit_time_threshold": 180000
+        "sleep_exit_altitude_h1": 500,
+        "sleep_exit_altitude_h2": 1500,
+        "sleep_exit_altitude_h3": 1800,
+        "sleep_exit_accel_a1": 96.5,
+        "sleep_exit_time_tstar": 180000,
+        "sleep_exit_time_t1": 1500,
+        "sleep_exit_time_t2": 2000,
+        "sleep_exit_time_t3": 2000,
+        "sleep_exit_time_tstop": 30000 
     },
     "debug_mode": true
 }
