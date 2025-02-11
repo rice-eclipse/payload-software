@@ -1,5 +1,6 @@
 import shutil
 import os
+
 class StorageManager:
     def __init__(self, path, angle_threshold, altitude_threshold):
         """
