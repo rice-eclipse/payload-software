@@ -156,7 +156,7 @@ class BigWrapper:
             alt_to_ground_delta = curr_alt - ground_alt
             
             # Sets altitude exit to true when we're barely above the ground (i.e. about to land)
-            if (alt_to_ground_delta <= 40 and (-0.05 <= cur_acc <= 0.05)):
+            if (alt_to_ground_delta <= 40 and (-0.05 <= curr_acc <= 0.05)):
                 # These units are in milliseconds.
                 time_tstop_accum += self.timeclock.get_prev_deltatime() 
 
