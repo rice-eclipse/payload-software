@@ -1,7 +1,7 @@
-from ConfigLoader import *
-from TimeClock import *
-from AeroImageStream import *
-from StorageManager import *
+from .ConfigLoader import ConfigLoader
+from .TimeClock import TimeClock
+from .AeroImageStream import AeroImageStream
+from .StorageManager import StorageManager
 
 class BigWrapper:
     def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
