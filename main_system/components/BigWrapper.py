@@ -1,6 +1,6 @@
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-from .AeroImageStream import AeroImageStream
+# from .AeroImageStream import AeroImageStream
 from .StorageManager import StorageManager
 
 class BigWrapper:
@@ -24,7 +24,7 @@ class BigWrapper:
         self.gyro_reader = GyroscopeReader(self.sensor_timeclock)
         self.accel_reader= AccelReader(self.sensor_timeclock)
         
-        self.image_stream = AeroImageStream(self.image_configs)
+        # self.image_stream = AeroImageStream(self.image_configs)
         # This time clock is used to track the timing of the entire launch process.
         # THE STATEMENTS BELOWED ARE OUTDATED. REPLACE WITH UPDATED COMMENTS WHEN POSSIBLE.
         # It is supposed to be started via a check with the AccelReader. If a large enough acceleration is detected,
@@ -181,7 +181,7 @@ class BigWrapper:
                 run_print_counter += 1
 
         # Call the method on the AeroImageStream to close the capture after active state exit.  
-        self.image_stream.close()
+        # self.image_stream.close()
 
         if (self.debug_mode == True):
             print('===MAIN SOFTWARE SYSTEM FULL EXIT===')
@@ -196,7 +196,7 @@ class BigWrapper:
     
     def active_exec(self, curr_alt, curr_angle, timestamp):
        
-        self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
+        # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
         if (self.debug_mode == True):
             print('===SINGLE IMAGE CAPTURED===')
