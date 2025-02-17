@@ -35,7 +35,8 @@ class BigWrapper:
         # However, if the timer for some reason failed to be activated by the AccelReader check, then start it 
         # when the hibernation exit condition is reached via a check to the AltReader, then start it then to prevent
         # an error with code that uses the timer for the timestamp, and mark that it was a delayed start.
-        self.timeclock = TimeClock()
+        self._hibernation_timeclock = TimeClock()
+        self._active_timeclock = TimeClock()
     
     def run(self):
         sleep_condition = True
