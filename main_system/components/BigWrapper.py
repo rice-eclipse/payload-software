@@ -7,7 +7,9 @@ class BigWrapper:
     def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
         # The configs object is broken down into two big config objects that are nested within the overall configs object
         # and some miscellaneous configs. 
-        self.config_loader = ConfigLoader('config.json')
+        # Because wrapper.py is where BigWrapper is initialized, the current working dir is payload-software, not
+        # main_system/components, so we need to account for that.
+        self.config_loader = ConfigLoader('./main_system/components/config.json')
         # Load the entire config object.
         self.configs = self.config_loader.fetch_all_configs()
         # Load the nested configs for the imaging process.
