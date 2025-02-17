@@ -20,7 +20,7 @@ class AccelReader:
     def get_curr_accel(self):
         # Get current acceleration in m/s^2 units
         self.store_accel(self.curr_accel)
-        self.curr_accel = self.sensor.acceleration[2]
+        self.curr_accel = self.sensor.acceleration
         return self.curr_accel
     
     def get_last_accel(self):
