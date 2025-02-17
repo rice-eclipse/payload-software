@@ -1,8 +1,10 @@
 import json
+import os
 
 class ConfigLoader:
     def __init__(self, config_filepath: str):
         self.config_filepath = config_filepath
+        print('currdir', os.getcwd)
         self.loaded_configs = json.load(open(config_filepath))
     
     def fetch_imaging_configs(self):
