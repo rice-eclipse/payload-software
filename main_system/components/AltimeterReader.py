@@ -7,8 +7,7 @@ import adafruit_bmp3xx
 class AltimeterReader:
 
     def __init__(self, timeclock):
-        if i2C is None:
-            i2C = board.I2C()
+        i2c = board.I2C()
         self.sensor = adafruit_bmp3xx.BMP3xx_I2C(i2c)
         # This might be better to start off at None or 0. Discuss more later.
         self.last_read_alt = float('-inf')

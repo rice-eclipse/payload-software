@@ -15,7 +15,6 @@ class GyroscopeReader:
         self.last_read_angle = float('-inf')
         self.curr_angle = float('-inf')
         self.angle = 0
-        # Start device here
 
     def get_curr_angle(self):
         self.store_angle(self.curr_angle)
