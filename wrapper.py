@@ -1,11 +1,11 @@
-from main_system.components import BigWrapper
-from main_system.components import AltimeterReader
-from main_system.components import GyroscopeReader
-from main_system.components import AccelReader
+from main_system.components.BigWrapper import BigWrapper
+from main_system.components.AltimeterReader import AltimeterReader
+from main_system.components.GyroscopeReader import GyroscopeReader
+from main_system.components.AccelReader import AccelReader
 
-from test_system.components import SimAltReader
-from test_system.components import SimGyroReader
-from test_system.components import SimAccelReader
+from test_system.components.SimAltReader import SimAltReader
+from test_system.components.SimGyroReader import SimGyroReader
+from test_system.components.SimAccelReader import SimAccelReader
 
 # All configs related to running the MainSoftwareSystem in its real launch configuration
 # is contained in config.json.
