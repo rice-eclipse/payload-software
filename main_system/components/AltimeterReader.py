@@ -18,13 +18,12 @@ class AltimeterReader:
         self.timer = timeclock
 
 
-    def get_curr_altitude(self):  # gets current altitude in meters and stores it
-        self.store_alt(self.curr_alt)
+    def get_curr_altitude(self):
+        self.last_read_alt = self.curr_alt
+
+        # Read and store altitude relative to sea level in meters.
         self.curr_alt = self.sensor.altitude
         return self.curr_alt
     
     def get_last_altitude(self):
         return self.last_read_alt
-
-    def store_alt(self, alt):
-        self.last_read_alt = alt
