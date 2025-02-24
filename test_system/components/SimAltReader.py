@@ -1,7 +1,7 @@
 import csv
 
 class SimAltReader:
-    def __init__(self, timeclock):
+    def __init__(self, ground_alt, timeclock):
         self.timer = timeclock
         self.path = r'./test_system/test_data/Archimedes2ExpectedFlightDataJan2025/GenAltData.csv'
         # self.path = r'./test_system/test_data/Spaceport2024BasedFlightDataDec2025/GenAltData.csv'

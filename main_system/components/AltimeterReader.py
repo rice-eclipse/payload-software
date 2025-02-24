@@ -6,9 +6,13 @@ import adafruit_bmp3xx
 
 class AltimeterReader:
 
-    def __init__(self, timeclock):
+    def __init__(self, ground_alt, timeclock):
         i2c = board.I2C()
         self.sensor = adafruit_bmp3xx.BMP3XX_I2C(i2c)
+
+        # Read in and store in what the "ground" altitude is in our current environment for offsetting the sensor values.
+        self.ground_alt = ground_alt
+
         # This might be better to start off at None or 0. Discuss more later.
         self.last_read_alt = float('-inf')
         self.curr_alt = float('-inf')
@@ -21,8 +25,10 @@ class AltimeterReader:
     def get_curr_altitude(self):
         self.last_read_alt = self.curr_alt
 
-        # Read and store altitude relative to sea level in meters.
-        self.curr_alt = self.sensor.altitude
+        # Read in raw values as meters and then convert to feet.
+        raw_alt_ft = self.sensor.altitude * 3.28084
+        # Calculate offset from our ground alt.
+        self.curr_alt = raw_alt_ft - self.ground_alt
         return self.curr_alt
     
     def get_last_altitude(self):

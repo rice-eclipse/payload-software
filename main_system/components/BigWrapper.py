@@ -24,7 +24,8 @@ class BigWrapper:
         # On a static test run, these would be the simulated data reader classes while in a live run, these would be the real sensor readers.
         # The _sim_sensor_timeclock is only utilized for the simulated data readers but also gets passed in to the real sensor readers.
         self._sim_sensor_timeclock = TimeClock()
-        self.alt_reader = AltimeterReader(self._sim_sensor_timeclock) 
+        ground_alt = self.exstate_configs["ground_alt"]
+        self.alt_reader = AltimeterReader(ground_alt, self._sim_sensor_timeclock) 
         self.gyro_reader = GyroscopeReader(self._sim_sensor_timeclock)
         self.accel_reader= AccelReader(self._sim_sensor_timeclock)
         
@@ -45,7 +46,6 @@ class BigWrapper:
         sleep_condition = True
         run_condition = False
         
-        ground_alt = self.exstate_configs["ground_alt"]
         altitude_h1 = self.exstate_configs["sleep_exit_altitude_h1"]
         altitude_h2 = self.exstate_configs["sleep_exit_altitude_h2"]
         altitude_h3 = self.exstate_configs["sleep_exit_altitude_h3"]
@@ -66,11 +66,10 @@ class BigWrapper:
         t2_window_sum = 0
         t3_window_sum = 0
         
-        last_alt = ground_alt
+        last_alt = 0
         curr_alt = self.alt_reader.get_curr_altitude()
         curr_angle = self.gyro_reader.get_curr_angle()
         curr_acc = self.accel_reader.get_curr_accel()
-        ground_delta_alt = curr_alt - ground_alt
 
         # Used just for the simulated sensor readers.
         # Not directly used in any control logic in BigWrapper.
@@ -97,7 +96,6 @@ class BigWrapper:
             curr_time = self._general_timeclock.get_curr_deltatime()
             curr_acc = self.accel_reader.get_curr_accel()
             curr_alt = self.alt_reader.get_curr_altitude()
-            ground_delta_alt = curr_alt - ground_alt
 
             t1_window.appendleft((curr_acc, curr_time))
             t1_window_sum += curr_acc
@@ -118,8 +116,8 @@ class BigWrapper:
                 self._active_timeclock.start_clock()
 
 
-            t2_window.appendleft(ground_delta_alt)
-            t2_window_sum += ground_delta_alt
+            t2_window.appendleft((curr_alt, curr_time))
+            t2_window_sum += curr_alt
             while (t2_window[-1][1] < curr_time - time_t2):
                 popped_reading = t2_window.pop()
                 t2_window_sum -= popped_reading
@@ -137,8 +135,8 @@ class BigWrapper:
                 self._active_timeclock.start_clock()
   
 
-            t3_window.appendleft(ground_delta_alt)
-            t3_window_sum += ground_delta_alt
+            t3_window.appendleft((curr_alt, curr_time))
+            t3_window_sum += curr_alt
             while (t3_window[-1][1] < curr_time - time_t3):
                 popped_reading = t3_window.pop()
                 t3_window_sum -= popped_reading
@@ -199,15 +197,14 @@ class BigWrapper:
             curr_alt = self.alt_reader.get_curr_altitude()
             curr_acc = self.accel_reader.get_curr_accel()
             curr_angle = self.gyro_reader.get_curr_angle()
-            ground_delta_alt = curr_alt - ground_alt
 
-            tstop_window_acc.appendleft(curr_acc)
+            tstop_window_acc.appendleft((curr_acc, curr_time))
             tstop_window_acc_sum += curr_acc
             while (tstop_window_acc[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_acc.pop()
                 tstop_window_acc_sum -= popped_reading
 
-            tstop_window_alt.appendleft(curr_alt)
+            tstop_window_alt.appendleft((curr_alt, curr_time))
             tstop_window_alt_sum += curr_alt
             while (tstop_window_alt[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_alt.pop()

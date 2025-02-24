@@ -21,9 +21,13 @@ class AccelReader:
 
     def get_curr_accel(self):
 
-        # Read accelerations in m/s^2
+        # The raw accelerations are read in as m/s^2
         accel_x, accel_y, accel_z = self.sensor.acceleration
-        combined_accel_mag = ((accel_x)**2 + (accel_y)**2 + (accel_z)**2)**0.5
+        # Combine all three axes vectors into one magnitude.
+        raw_combined_accel_mag = ((accel_x)**2 + (accel_y)**2 + (accel_z)**2)**0.5
+
+        # Convert to f/s^2
+        combined_accel_mag = raw_combined_accel_mag * 3.28084
 
         self.last_read_accel = self.curr_accel
         self.curr_accel = combined_accel_mag
