@@ -1,9 +1,8 @@
-from collections import deque
-
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
 from .AeroImageStream import AeroImageStream
 from .StorageManager import StorageManager
+from .SlidingWindow import SlidingWindow
 
 class BigWrapper:
     def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
@@ -60,13 +59,13 @@ class BigWrapper:
         c1_exit_cond = False
         c2_exit_cond = False
         c3_exit_cond = False
-        t1_window = deque()
-        t2_window = deque()
-        t3_window = deque()
-        t1_window_sum = 0
-        t2_window_sum = 0
-        t3_window_sum = 0
         
+        # Replace deques with SlidingWindow instances
+        t1_window = SlidingWindow(time_t1)
+        t2_window = SlidingWindow(time_t2)
+        t3_window = SlidingWindow(time_t3)
+        tstop_window_alt = SlidingWindow(time_tstop)
+        tstop_window_acc = SlidingWindow(time_tstop)
         last_alt = 0
         curr_alt = self.alt_reader.get_curr_altitude()
         curr_angle = self.gyro_reader.get_curr_angle()
@@ -100,14 +99,9 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
             curr_alt = self.alt_reader.get_curr_altitude()
 
-            t1_window.appendleft((curr_acc, curr_time))
-            t1_window_sum += curr_acc
-            while (t1_window[-1][1] < curr_time - time_t1):
-                popped_reading = t1_window.pop()
-                t1_window_sum -= popped_reading[0]
-
-            # Check to start hibernation exit timer if we have triggered exit condition C1 based on acceleration.
-            accelc1_avg = t1_window_sum / len(t1_window)
+            # Update windows with new readings
+            t1_window.add(curr_acc, curr_time)
+            accelc1_avg = t1_window.avg()
 
             if accelc1_avg >= accel_a1:
                 c1_exit_cond = True
@@ -115,54 +109,35 @@ class BigWrapper:
             if c1_exit_cond == True and self._active_timeclock.has_started() == False:
                 if (self.debug_mode == True):
                     print('Started Active Timer From C1')
-
                 self._active_timeclock.start_clock()
 
-
-            t2_window.appendleft((curr_alt, curr_time))
-            t2_window_sum += curr_alt
-            while (t2_window[-1][1] < curr_time - time_t2):
-                popped_reading = t2_window.pop()
-                t2_window_sum -= popped_reading[0]
-
-            # Check to start hibernation exit timer if we have triggered exit condition C2 based on altitude.
-            altc2_avg = t2_window_sum / len(t2_window)
+            t2_window.add(curr_alt, curr_time)
+            altc2_avg = t2_window.avg()
+            
             if altc2_avg >= altitude_h1:
                 c2_exit_cond = True
 
             if c2_exit_cond == True and self._active_timeclock.has_started() == False:
-
                 if (self.debug_mode == True):
                     print('Started Active Timer From C2')
-                    
                 self._active_timeclock.start_clock()
-  
 
-            t3_window.appendleft((curr_alt, curr_time))
-            t3_window_sum += curr_alt
-            while (t3_window[-1][1] < curr_time - time_t3):
-                popped_reading = t3_window.pop()
-                t3_window_sum -= popped_reading[0]
-
-            # Check to instantly exit hibernation state if we have triggered exit condition C3 based on altitude.
-            altc3_avg = t3_window_sum / len(t3_window)
+            t3_window.add(curr_alt, curr_time)
+            altc3_avg = t3_window.avg()
+            
             if (curr_alt - last_alt < 0) and (altitude_h2 <= altc3_avg <= altitude_h3):
                 c3_exit_cond = True
             
             if c3_exit_cond:
                 sleep_condition = False
                 if self._active_timeclock.started != True:
-
                     if (self.debug_mode == True):
                         print('Delayed Active Timer Start From C3')
-
                     self._active_timeclock.start_clock()
-
 
             # Once the accelerometer has activated the timer countdown, if the timer exceeds the threshold, enter active state. 
             if (self._active_timeclock.get_curr_deltatime() >= time_tstar):
                 print('Setting Hibernation Exit To True From Active Timer')
-
                 sleep_condition = False
 
             last_alt = curr_alt
@@ -187,12 +162,6 @@ class BigWrapper:
         # amount of debug information is printed, making things a bit more readable.
         run_print_counter = 0
 
-        tstop_window_alt = deque()
-        tstop_window_acc = deque()
-
-        tstop_window_alt_sum = 0
-        tstop_window_acc_sum = 0
-
         run_condition = True
         while run_condition:
             
@@ -201,21 +170,13 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
             curr_angle = self.gyro_reader.get_curr_angle()
 
-            tstop_window_acc.appendleft((curr_acc, curr_time))
-            tstop_window_acc_sum += curr_acc
-            while (tstop_window_acc[-1][1] < curr_time - time_tstop):
-                popped_reading = tstop_window_acc.pop()
-                tstop_window_acc_sum -= popped_reading[0]
-
-            tstop_window_alt.appendleft((curr_alt, curr_time))
-            tstop_window_alt_sum += curr_alt
-            while (tstop_window_alt[-1][1] < curr_time - time_tstop):
-                popped_reading = tstop_window_alt.pop()
-                tstop_window_alt_sum -= popped_reading[0]
+            tstop_window_acc.add(curr_acc, curr_time)
+            tstop_window_alt.add(curr_alt, curr_time)
 
             # Sets exit to true when we're barely above the ground (i.e. about to land) and no longer accelerating in any direction
-            tstop_window_alt_avg = tstop_window_alt_sum / len(tstop_window_alt)
-            tstop_window_acc_avg = tstop_window_acc_sum / len(tstop_window_acc)
+            tstop_window_alt_avg = tstop_window_alt.avg()
+            tstop_window_acc_avg = tstop_window_acc.avg()
+            
             if (tstop_window_alt_avg <= 40 and (-0.05 <= tstop_window_acc_avg <= 0.05)):
                 run_condition = False
                 

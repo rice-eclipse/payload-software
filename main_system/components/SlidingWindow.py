@@ -2,8 +2,9 @@ from collections import deque
 
 class WindowReading:
     """Represents a single reading in the sliding window."""
-    value: float
-    timestamp: float
+    def __init__(self, value: float, timestamp: float):
+        self.value = value
+        self.timestamp = timestamp
 
 class SlidingWindow:
     """
@@ -60,7 +61,7 @@ class SlidingWindow:
         self.add_reading(value, current_time)
         self.cleanup_old_readings(current_time)
         
-    def __avg__(self):
+    def avg(self):
         """
         Calculate the average of all values in the window.
         
