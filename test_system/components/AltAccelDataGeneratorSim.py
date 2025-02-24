@@ -72,8 +72,8 @@ class AltAccelDataGeneratorSim:
             extracted_altitude_data.append([time, 0])
             extracted_acceleration_data.append([time, 0])
 
-        self._write_csv(self.output_altitude, extracted_altitude_data, ['time ', 'altitude'])
-        self._write_csv(self.output_acceleration, extracted_acceleration_data, ['time ', 'acceleration'])
+        self._write_csv(self.output_altitude, extracted_altitude_data, ['time', 'altitude'])
+        self._write_csv(self.output_acceleration, extracted_acceleration_data, ['time', 'acceleration'])
 
         print(f"\nFiles saved in '{self.output_dir}'")
 

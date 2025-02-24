@@ -73,7 +73,7 @@ class AltDataGenerator:
         """
         with open(self.out, 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(['time', 'height'])
+            writer.writerow(['time', 'altitude'])
             for time, alt in self.alt_map.items():
                 writer.writerow([time, alt])
 
