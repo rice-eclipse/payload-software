@@ -78,6 +78,8 @@ class BigWrapper:
         # of self._sim_sensor_timeclock
         self._sim_sensor_timeclock.start_clock()
 
+        self._general_timeclock.start_clock()
+
         if (self.debug_mode == True):
             print('===MAIN SOFTWARE SYSTEM PROGRAM START===')
             print('Ground Altitude:', ground_alt)
@@ -103,7 +105,7 @@ class BigWrapper:
             while (t1_window[-1][1] < curr_time - time_t1):
                 popped_reading = t1_window.pop()
                 t1_window_sum -= popped_reading[0]
-            
+
             # Check to start hibernation exit timer if we have triggered exit condition C1 based on acceleration.
             accelc1_avg = t1_window_sum / len(t1_window)
 
@@ -121,7 +123,7 @@ class BigWrapper:
             t2_window_sum += curr_alt
             while (t2_window[-1][1] < curr_time - time_t2):
                 popped_reading = t2_window.pop()
-                t2_window_sum -= popped_reading
+                t2_window_sum -= popped_reading[0]
 
             # Check to start hibernation exit timer if we have triggered exit condition C2 based on altitude.
             altc2_avg = t2_window_sum / len(t2_window)
@@ -140,7 +142,7 @@ class BigWrapper:
             t3_window_sum += curr_alt
             while (t3_window[-1][1] < curr_time - time_t3):
                 popped_reading = t3_window.pop()
-                t3_window_sum -= popped_reading
+                t3_window_sum -= popped_reading[0]
 
             # Check to instantly exit hibernation state if we have triggered exit condition C3 based on altitude.
             altc3_avg = t3_window_sum / len(t3_window)
@@ -203,13 +205,13 @@ class BigWrapper:
             tstop_window_acc_sum += curr_acc
             while (tstop_window_acc[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_acc.pop()
-                tstop_window_acc_sum -= popped_reading
+                tstop_window_acc_sum -= popped_reading[0]
 
             tstop_window_alt.appendleft((curr_alt, curr_time))
             tstop_window_alt_sum += curr_alt
             while (tstop_window_alt[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_alt.pop()
-                tstop_window_alt_sum -= popped_reading
+                tstop_window_alt_sum -= popped_reading[0]
 
             # Sets exit to true when we're barely above the ground (i.e. about to land) and no longer accelerating in any direction
             tstop_window_alt_avg = tstop_window_alt_sum / len(tstop_window_alt)
