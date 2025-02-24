@@ -3,7 +3,7 @@ import csv
 class SimGyroReader:
     def __init__(self, timeclock):
         self.timer = timeclock
-        self.path = r'../generatedData/GenGyroData.csv'
+        self.path = r'test_system/test_data/Archimedes2ExpectedFlightDataJan2025/GenGyroData.csv'
         self.time_keys = []
         self.angle_map = {}
 
