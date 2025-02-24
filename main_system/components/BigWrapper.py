@@ -120,7 +120,7 @@ class BigWrapper:
 
             t2_window.appendleft(ground_delta_alt)
             t2_window_sum += ground_delta_alt
-            while (t2_window[-1] < curr_time - time_t2):
+            while (t2_window[-1][1] < curr_time - time_t2):
                 popped_reading = t2_window.pop()
                 t2_window_sum -= popped_reading
 
@@ -139,7 +139,7 @@ class BigWrapper:
 
             t3_window.appendleft(ground_delta_alt)
             t3_window_sum += ground_delta_alt
-            while (t3_window[-1] < curr_time - time_t3):
+            while (t3_window[-1][1] < curr_time - time_t3):
                 popped_reading = t3_window.pop()
                 t3_window_sum -= popped_reading
 
@@ -170,10 +170,10 @@ class BigWrapper:
                 print('===SINGLE HIBERNATION CYCLE===')
                 print('Altitude Reading:', curr_alt)
                 print('Average Altitude Window Reading:', altc2_avg, altc3_avg)
-                print('t2 Window Length, t3 Window Length', len(t2_window), len(t3_window))
+                print('t2 Window Length, t3 Window Length:', len(t2_window), len(t3_window))
                 print('Accel Reading:', curr_acc)
                 print('Average Acceleration Window Reading:', accelc1_avg)
-                print('t1 Window Length', len(t1_window))
+                print('t1 Window Length:', len(t1_window))
                 print('Hibernation Status:', sleep_condition)
                 print('Active Timer Start Status:', self._active_timeclock.has_started())
                 if (self._active_timeclock.started == True):
@@ -203,13 +203,13 @@ class BigWrapper:
 
             tstop_window_acc.appendleft(curr_acc)
             tstop_window_acc_sum += curr_acc
-            while (tstop_window_acc[-1] < curr_time - time_tstop):
+            while (tstop_window_acc[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_acc.pop()
                 tstop_window_acc_sum -= popped_reading
 
             tstop_window_alt.appendleft(curr_alt)
             tstop_window_alt_sum += curr_alt
-            while (tstop_window_alt[-1] < curr_time - time_tstop):
+            while (tstop_window_alt[-1][1] < curr_time - time_tstop):
                 popped_reading = tstop_window_alt.pop()
                 tstop_window_alt_sum -= popped_reading
 
@@ -225,12 +225,12 @@ class BigWrapper:
             if (self.debug_mode == True and run_print_counter == 60):
                 print('===SINGLE ACTIVE STATE CYCLE===')
                 print('Altitude Reading:', curr_alt)
-                print('Average Altitude Window Reading', tstop_window_alt_avg)
-                print('tstop Altitude Window Length', len(tstop_window_alt))
+                print('Average Altitude Window Reading:', tstop_window_alt_avg)
+                print('tstop Altitude Window Length:', len(tstop_window_alt))
                 print('Angle Reading:', curr_angle)
                 print('Accel Reading:', curr_acc)
-                print('Average Acceleration Window Reading', tstop_window_acc_avg)
-                print('tstop Acceleration Window Length', len(tstop_window_acc))
+                print('Average Acceleration Window Reading:', tstop_window_acc_avg)
+                print('tstop Acceleration Window Length:', len(tstop_window_acc))
                 print('Active State Status:', run_condition)
                 print('Active Timer Start Status:', self._active_timeclock.has_started())
                 if (self._active_timeclock.started == True):
@@ -245,12 +245,12 @@ class BigWrapper:
         if (self.debug_mode == True):
             print('===MAIN SOFTWARE SYSTEM FULL EXIT===')
             print('Last Altitude Reading:', curr_alt)
-            print('Last Average Altitude Window Reading', tstop_window_alt_avg)
-            print('Last tstop Altitude Window Length', len(tstop_window_alt))
+            print('Last Average Altitude Window Reading:', tstop_window_alt_avg)
+            print('Last tstop Altitude Window Length:', len(tstop_window_alt))
             print('Last Angle Reading:', curr_angle)
             print('Last Accel Reading:', curr_acc)
-            print('Last Average Acceleration Window Reading', tstop_window_acc_avg)
-            print('Last tstop Acceleration Window Length', len(tstop_window_acc))
+            print('Last Average Acceleration Window Reading:', tstop_window_acc_avg)
+            print('Last tstop Acceleration Window Length:', len(tstop_window_acc))
             print('Hibernation Status:', sleep_condition)
             print('Active State Status:', run_condition)
             print('Active Timer Start Status:', self._active_timeclock.has_started())
