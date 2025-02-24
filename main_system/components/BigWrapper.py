@@ -255,11 +255,11 @@ class BigWrapper:
        
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
-        if (self.debug_mode == True):
-            print('===SINGLE IMAGE CAPTURED===')
-            print('Image Altitude:', curr_alt)
-            print('Image Angle:', curr_angle)
-            print('Active Timer Start Status:', self._active_timeclock.has_started())
-            if (self._active_timeclock.started == True):
-                print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
-            print('Image Timestamp:', timestamp)
+        # if (self.debug_mode == True):
+        #     print('===SINGLE IMAGE CAPTURED===')
+        #     print('Image Altitude:', curr_alt)
+        #     print('Image Angle:', curr_angle)
+        #     print('Active Timer Start Status:', self._active_timeclock.has_started())
+        #     if (self._active_timeclock.started == True):
+        #         print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
+        #     print('Image Timestamp:', timestamp)
