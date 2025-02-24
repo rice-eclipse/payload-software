@@ -46,6 +46,7 @@ class BigWrapper:
         sleep_condition = True
         run_condition = False
         
+        ground_alt = self.exstate_configs["ground_alt"]
         altitude_h1 = self.exstate_configs["sleep_exit_altitude_h1"]
         altitude_h2 = self.exstate_configs["sleep_exit_altitude_h2"]
         altitude_h3 = self.exstate_configs["sleep_exit_altitude_h3"]
