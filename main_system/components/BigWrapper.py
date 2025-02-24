@@ -263,3 +263,5 @@ class BigWrapper:
         #     if (self._active_timeclock.started == True):
         #         print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
         #     print('Image Timestamp:', timestamp)
+
+        pass
