@@ -167,7 +167,7 @@ class BigWrapper:
 
             last_alt = curr_alt
                 
-            if (self.debug_mode == True and sleep_print_counter == 60):
+            if (self.debug_mode == True and sleep_print_counter == 300):
                 print('===SINGLE HIBERNATION CYCLE===')
                 print('Altitude Reading:', curr_alt)
                 print('Average Altitude Window Reading:', altc2_avg, altc3_avg)
@@ -222,7 +222,7 @@ class BigWrapper:
             # Call the code to conduct all of the operations we want to do for a single active state cycle.
             self.active_exec(curr_alt, curr_angle, self._active_timeclock.get_curr_timestamp())
 
-            if (self.debug_mode == True and run_print_counter == 60):
+            if (self.debug_mode == True and run_print_counter == 300):
                 print('===SINGLE ACTIVE STATE CYCLE===')
                 print('Altitude Reading:', curr_alt)
                 print('Average Altitude Window Reading:', tstop_window_alt_avg)
