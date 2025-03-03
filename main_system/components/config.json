@@ -19,5 +19,6 @@
         "sleep_exit_time_t3": 2000,
         "sleep_exit_time_tstop": 30000 
     },
-    "debug_mode": true
+    "debug_mode": true,
+    "log_mode": true
 }
