@@ -1,6 +1,8 @@
 import csv
 import os
 
+# Use for OpenRocket expected flight data.
+# Make sure that the OpenRocket CSVs are formatted in the correct way.
 class AltAccelDataGeneratorSim:
     """
     A class to generate simulated altitude and acceleration data from a raw CSV file.
@@ -28,8 +30,8 @@ class AltAccelDataGeneratorSim:
         Sets up the file paths for input and output files.
         """
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.input_file = os.path.join(script_dir, '..', 'data-sources', 'RawArchimedes2ExpectedFlightDataJan2025.csv')
-        self.output_dir = os.path.join(script_dir, '..', 'test-data/Archimedes2ExpectedFlightDataJan2025')
+        self.input_file = os.path.join(script_dir, '..', 'data_sources', 'RawEurekaExpectedFlightDataFeb2025.csv')
+        self.output_dir = os.path.join(script_dir, '..', 'test_data/EurekaExpectedFlightDataFeb2025')
         self.output_altitude = os.path.join(self.output_dir, 'GenAltData.csv')
         self.output_acceleration = os.path.join(self.output_dir, 'GenAccelData.csv')
 
