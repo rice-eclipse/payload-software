@@ -3,8 +3,9 @@ import csv
 class SimAccelReader:
     def __init__(self, timeclock):
         self.timer = timeclock
-        self.path = r'./test_system/test_data/Archimedes2ExpectedFlightDataJan2025/GenAccelData.csv'
-        # self.path = r'./test_system/test_data/Spaceport2024BasedFlightDataDec2025/GenAccelData.csv'
+        # self.path = r'./test_system/test_data/Archimedes2ExpectedFlightDataJan2025/GenAccelData.csv'
+        # self.path = r'./test_system/test_data/EurekaExpectedFlightDataFeb2025/GenAccelData.csv'
+        self.path = r'./test_system/test_data/Spaceport2024BasedFlightDataDec2025/GenAccelData.csv'
         self.time_keys = []
         self.accel_map = {}
 

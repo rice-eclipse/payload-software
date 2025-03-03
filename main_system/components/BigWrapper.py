@@ -105,7 +105,7 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
 
             if (self.log_mode == True):
-                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_alt]], 
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc]], 
                                                     columns=['timestamp', 'altitude', 'angle', 'acceleration'])
                 self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
 
@@ -211,7 +211,7 @@ class BigWrapper:
             curr_angle = self.gyro_reader.get_curr_angle()
 
             if (self.log_mode == True):
-                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_alt]], 
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc]], 
                                                     columns=['timestamp', 'altitude', 'angle', 'acceleration'])
                 self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
 
