@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
 # from .AeroImageStream import AeroImageStream
@@ -17,7 +19,6 @@ class BigWrapper:
         self.image_configs = self.config_loader.fetch_imaging_configs()
         # Load the nested configs for the deployment process.
         self.exstate_configs = self.config_loader.fetch_extstate_configs()
-        self.debug_mode = self.configs['debug_mode']
         
         # Note: These create objects of the class passed in via args.
         # On a static test run, these would be the simulated data reader classes while in a live run, these would be the real sensor readers.
@@ -30,16 +31,15 @@ class BigWrapper:
         
         # self.image_stream = AeroImageStream(self.image_configs)
 
-        # This time clock is used to track the timing of the entire launch process.
-        # THE STATEMENTS BELOWED ARE OUTDATED. REPLACE WITH UPDATED COMMENTS WHEN POSSIBLE.
-        # It is supposed to be started via a check with the AccelReader. If a large enough acceleration is detected,
-        # the rocket is considered to have started the flight and the timer starts. Based off that, if the timer has
-        # reached a certain time without exiting hibernation mode, then exit hibernation mode and enter active mode.
-        # However, if the timer for some reason failed to be activated by the AccelReader check, then start it 
-        # when the hibernation exit condition is reached via a check to the AltReader, then start it then to prevent
-        # an error with code that uses the timer for the timestamp, and mark that it was a delayed start.
         self._general_timeclock = TimeClock()
         self._active_timeclock = TimeClock()
+
+        self.debug_mode = self.configs['debug_mode']
+        self.log_mode = self.configs['log_mode']
+
+        self.sensor_log_df = pd.DataFrame(columns=['timestamp', 'altitude', 'angle', 'acceleration'])
+        self.events_log_df = pd.DataFrame(columns=['timestamp', 'event'])
+        self.imaging_log_df = pd.DataFrame(columns=['timestamp', 'altitude', 'angle'])
     
     def run(self):
         sleep_condition = True
@@ -59,6 +59,10 @@ class BigWrapper:
         c1_exit_cond = False
         c2_exit_cond = False
         c3_exit_cond = False
+
+        c1_has_triggered = False
+        c2_has_triggered = False
+        c3_has_triggered = False
         
         # Replace deques with SlidingWindow instances
         t1_window = SlidingWindow(time_t1)
@@ -96,8 +100,14 @@ class BigWrapper:
         while sleep_condition:
             # Fetch current altitude reading.
             curr_time = self._general_timeclock.get_curr_deltatime()
-            curr_acc = self.accel_reader.get_curr_accel()
             curr_alt = self.alt_reader.get_curr_altitude()
+            curr_angle = self.gyro_reader.get_curr_angle()
+            curr_acc = self.accel_reader.get_curr_accel()
+
+            if (self.log_mode == True):
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_alt]], 
+                                                    columns=['timestamp', 'altitude', 'angle', 'acceleration'])
+                self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
 
             # Update windows with new readings
             t1_window.add(curr_acc, curr_time)
@@ -106,10 +116,18 @@ class BigWrapper:
             if accelc1_avg >= accel_a1:
                 c1_exit_cond = True
 
-            if c1_exit_cond == True and self._active_timeclock.has_started() == False:
+            if c1_exit_cond == True and c1_has_triggered == False:
+                c1_has_triggered = True
+
                 if (self.debug_mode == True):
                     print('Started Active Timer From C1')
-                self._active_timeclock.start_clock()
+                if (self.log_mode == True):
+                    new_events_log_entry = pd.DataFrame([[curr_time, 'C1 Triggered - Active Timer Started']],
+                                                        columns=['timestamp', 'event'])
+                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+
+                if (self._active_timeclock.has_started() == False):
+                    self._active_timeclock.start_clock()
 
             t2_window.add(curr_alt, curr_time)
             altc2_avg = t2_window.avg()
@@ -117,10 +135,18 @@ class BigWrapper:
             if altc2_avg >= altitude_h1:
                 c2_exit_cond = True
 
-            if c2_exit_cond == True and self._active_timeclock.has_started() == False:
+            if c2_exit_cond == True and c2_has_triggered == False:
+                c2_has_triggered = True
+
                 if (self.debug_mode == True):
                     print('Started Active Timer From C2')
-                self._active_timeclock.start_clock()
+                if (self.log_mode == True):
+                    new_events_log_entry = pd.DataFrame([[curr_time, 'C2 Triggered - Active Timer Started']],
+                                                        columns=['timestamp', 'event'])
+                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                
+                if (self._active_timeclock.has_started() == False):
+                    self._active_timeclock.start_clock()
 
             t3_window.add(curr_alt, curr_time)
             altc3_avg = t3_window.avg()
@@ -128,17 +154,31 @@ class BigWrapper:
             if (curr_alt - last_alt < 0) and (altitude_h2 <= altc3_avg <= altitude_h3):
                 c3_exit_cond = True
             
-            if c3_exit_cond:
+            if c3_exit_cond == True and c3_has_triggered == False:
+                c3_has_triggered = True
                 sleep_condition = False
+
                 if self._active_timeclock.started != True:
                     if (self.debug_mode == True):
                         print('Delayed Active Timer Start From C3')
                     self._active_timeclock.start_clock()
 
+                if (self.log_mode == True):
+                    new_events_log_entry = pd.DataFrame([[curr_time, 'C3 Triggered - Exiting From Hiberation']],
+                                                        columns=['timestamp', 'event'])
+                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+
             # Once the accelerometer has activated the timer countdown, if the timer exceeds the threshold, enter active state. 
             if (self._active_timeclock.get_curr_deltatime() >= time_tstar):
-                print('Setting Hibernation Exit To True From Active Timer')
                 sleep_condition = False
+                
+                if (self.debug_mode == True):
+                    print('Setting Hibernation Exit To True From Active Timer')
+
+                if (self.log_mode == True):
+                    new_events_log_entry = pd.DataFrame([[curr_time, 'Active Timer Exit Triggered - Exiting From Hiberation']],
+                                                        columns=['timestamp', 'event'])
+                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
 
             last_alt = curr_alt
                 
@@ -170,6 +210,11 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
             curr_angle = self.gyro_reader.get_curr_angle()
 
+            if (self.log_mode == True):
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_alt]], 
+                                                    columns=['timestamp', 'altitude', 'angle', 'acceleration'])
+                self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
+
             tstop_window_acc.add(curr_acc, curr_time)
             tstop_window_alt.add(curr_alt, curr_time)
 
@@ -179,6 +224,11 @@ class BigWrapper:
             
             if (tstop_window_alt_avg <= 40 and (-0.05 <= tstop_window_acc_avg <= 0.05)):
                 run_condition = False
+
+                if (self.log_mode == True):
+                    new_events_log_entry = pd.DataFrame([[curr_time, 'Run State Exited']],
+                                                        columns=['timestamp', 'event'])
+                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
                 
             # Call the code to conduct all of the operations we want to do for a single active state cycle.
             self.active_exec(curr_alt, curr_angle, self._active_timeclock.get_curr_timestamp())
@@ -217,10 +267,19 @@ class BigWrapper:
             print('Active Timer Start Status:', self._active_timeclock.has_started())
             if (self._active_timeclock.started == True):
                 print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
+
+        self.events_log_df.to_csv('./data_logs/events_log.csv')
+        self.imaging_log_df.to_csv('./data_logs/imaging_log.csv')
+        self.sensor_log_df.to_csv('./data_logs/sensor_log.csv')
     
     def active_exec(self, curr_alt, curr_angle, timestamp):
        
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
+
+        # if (self.log_mode == True):
+        #     new_imaging_log_entry = pd.DataFrame([[timestamp, curr_alt, curr_angle]],
+        #                                          columns=['timestamp', 'altitude', 'angle'])
+        #     self.imaging_log_df = pd.concat([self.imaging_log_df, new_imaging_log_entry], ignore_index=True)
 
         # if (self.debug_mode == True):
         #     print('===SINGLE IMAGE CAPTURED===')
