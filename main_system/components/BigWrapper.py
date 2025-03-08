@@ -2,16 +2,18 @@ import pandas as pd
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-# from .AeroImageStream import AeroImageStream
+from .AeroImageStream import AeroImageStream
 from .StorageManager import StorageManager
+
 from .SlidingWindow import SlidingWindow
+from .DataLogger import DataLogger
 
 class BigWrapper:
     def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
         # The configs object is broken down into two big config objects that are nested within the overall configs object
         # and some miscellaneous configs. 
-        # Because wrapper.py is where BigWrapper is initialized, the current working dir is payload-software, not
-        # main_system/components, so we need to account for that.
+        
+        # Because wrapper.py is where BigWrapper is initialized, the current working dir is /payload-software/, not /main_system/components.
         self.config_loader = ConfigLoader('./main_system/components/config.json')
         # Load the entire config object.
         self.configs = self.config_loader.fetch_all_configs()
@@ -36,10 +38,22 @@ class BigWrapper:
 
         self.debug_mode = self.configs['debug_mode']
         self.log_mode = self.configs['log_mode']
+        self.max_log_size = self.configs['max_log_size']
 
-        self.sensor_log_df = pd.DataFrame(columns=['timestamp', 'altitude', 'angle', 'acceleration'])
-        self.events_log_df = pd.DataFrame(columns=['timestamp', 'event'])
-        self.imaging_log_df = pd.DataFrame(columns=['timestamp', 'altitude', 'angle'])
+        self.hib_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
+                                    't1_win_len', 't1_win_avg', 't2_win_len', 't2_win_avg', 
+                                    't3_win_len', 't3_win_avg', 'accel_x', 'accel_y', 'accel_z']
+        self.actv_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
+                                    'tstop_win_alt_len', 'tstop_win_alt_avg',
+                                    'tstop_win_acc_len', 'tstop_win_acc_avg', 'accel_x', 'accel_y', 'accel_z']
+        self.events_log_cols = ['timestamp', 'event']
+        self.imaging_log_cols = ['timestamp', 'altitude', 'angle']
+
+        # TODO: Discuss whether this would be best saved in a config file.
+        self.hib_sensor_log = DataLogger('./data_logs/hib_sensor_log.csv', self.max_log_size, 20, self.hib_sensor_log_cols)
+        self.actv_sensor_log = DataLogger('./data_logs/actv_sensor_log.csv', self.max_log_size, 20, self.actv_sensor_log_cols)
+        self.events_log = DataLogger('./data_logs/events_log.csv', 1, 1, self.events_log_cols)
+        self.imaging_log = DataLogger('./data_logs/imaging_log_df.csv', 20, self.max_log_size, self.imaging_log_cols)
     
     def run(self):
         sleep_condition = True
@@ -74,6 +88,7 @@ class BigWrapper:
         curr_alt = self.alt_reader.get_curr_altitude()
         curr_angle = self.gyro_reader.get_curr_angle()
         curr_acc = self.accel_reader.get_curr_accel()
+        acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
 
         # Used just for the simulated sensor readers.
         # Not directly used in any control logic in BigWrapper.
@@ -102,12 +117,10 @@ class BigWrapper:
             curr_time = self._general_timeclock.get_curr_deltatime()
             curr_alt = self.alt_reader.get_curr_altitude()
             curr_angle = self.gyro_reader.get_curr_angle()
+            # Acceleration is in magnitude in order to provide robustness against mis-orientation.
             curr_acc = self.accel_reader.get_curr_accel()
-
-            if (self.log_mode == True):
-                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc]], 
-                                                    columns=['timestamp', 'altitude', 'angle', 'acceleration'])
-                self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
+            # Acceleration vectors only utilized in logging.
+            acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
 
             # Update windows with new readings
             t1_window.add(curr_acc, curr_time)
@@ -123,8 +136,9 @@ class BigWrapper:
                     print('Started Active Timer From C1')
                 if (self.log_mode == True):
                     new_events_log_entry = pd.DataFrame([[curr_time, 'C1 Triggered - Active Timer Started']],
-                                                        columns=['timestamp', 'event'])
-                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                                                        columns=self.events_log_cols)
+                    self.events_log.update_log(new_events_log_entry)
+                    self.events_log.check_write_log()
 
                 if (self._active_timeclock.has_started() == False):
                     self._active_timeclock.start_clock()
@@ -142,8 +156,9 @@ class BigWrapper:
                     print('Started Active Timer From C2')
                 if (self.log_mode == True):
                     new_events_log_entry = pd.DataFrame([[curr_time, 'C2 Triggered - Active Timer Started']],
-                                                        columns=['timestamp', 'event'])
-                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                                                        columns=self.events_log_cols)
+                    self.events_log.update_log(new_events_log_entry)
+                    self.events_log.check_write_log()
                 
                 if (self._active_timeclock.has_started() == False):
                     self._active_timeclock.start_clock()
@@ -165,8 +180,9 @@ class BigWrapper:
 
                 if (self.log_mode == True):
                     new_events_log_entry = pd.DataFrame([[curr_time, 'C3 Triggered - Exiting From Hiberation']],
-                                                        columns=['timestamp', 'event'])
-                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                                                        columns=self.events_log_cols)
+                    self.events_log.update_log(new_events_log_entry)
+                    self.events_log.check_write_log()
 
             # Once the accelerometer has activated the timer countdown, if the timer exceeds the threshold, enter active state. 
             if (self._active_timeclock.get_curr_deltatime() >= time_tstar):
@@ -177,10 +193,18 @@ class BigWrapper:
 
                 if (self.log_mode == True):
                     new_events_log_entry = pd.DataFrame([[curr_time, 'Active Timer Exit Triggered - Exiting From Hiberation']],
-                                                        columns=['timestamp', 'event'])
-                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                                                        columns=self.events_log_cols)
+                    self.events_log.update_log(new_events_log_entry)
+                    self.events_log.check_write_log()
 
-            last_alt = curr_alt
+            # Log sensor data into hibernation log.
+            if (self.log_mode == True):
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc, 
+                                                      len(t1_window), accelc1_avg, len(t2_window), altc2_avg,
+                                                      len(t3_window), altc3_avg, acc_x, acc_y, acc_z]], 
+                                                    columns=self.hib_sensor_log_cols)
+                self.hib_sensor_log.update_log(new_sensor_log_entry)
+                self.hib_sensor_log.check_write_log()
                 
             if (self.debug_mode == True and sleep_print_counter == 100):
                 print('===SINGLE HIBERNATION CYCLE===')
@@ -196,7 +220,13 @@ class BigWrapper:
                     print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
                 sleep_print_counter = 0
             else:
-                sleep_print_counter += 1         
+                sleep_print_counter += 1   
+
+            last_alt = curr_alt      
+
+        ### EXITED HIBERNATION STATE.
+        self.hib_sensor_log.force_write_log()
+        ### ENTERING ACTIVE STATE.
 
         # A counter to "delay" the printing of debug output so that a less overwhelming
         # amount of debug information is printed, making things a bit more readable.
@@ -207,13 +237,9 @@ class BigWrapper:
             
             curr_time = self._general_timeclock.get_curr_deltatime()
             curr_alt = self.alt_reader.get_curr_altitude()
-            curr_acc = self.accel_reader.get_curr_accel()
             curr_angle = self.gyro_reader.get_curr_angle()
-
-            if (self.log_mode == True):
-                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc]], 
-                                                    columns=['timestamp', 'altitude', 'angle', 'acceleration'])
-                self.sensor_log_df = pd.concat([self.sensor_log_df, new_sensor_log_entry], ignore_index=True)
+            curr_acc = self.accel_reader.get_curr_accel()
+            acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
 
             tstop_window_acc.add(curr_acc, curr_time)
             tstop_window_alt.add(curr_alt, curr_time)
@@ -227,11 +253,21 @@ class BigWrapper:
 
                 if (self.log_mode == True):
                     new_events_log_entry = pd.DataFrame([[curr_time, 'Run State Exited']],
-                                                        columns=['timestamp', 'event'])
-                    self.events_log_df = pd.concat([self.events_log_df, new_events_log_entry], ignore_index=True)
+                                                        columns=self.events_log_cols)
+                    self.events_log.update_log(new_events_log_entry)
+                    self.events_log.check_write_log
                 
             # Call the code to conduct all of the operations we want to do for a single active state cycle.
             self.active_exec(curr_alt, curr_angle, self._active_timeclock.get_curr_timestamp())
+
+            if (self.log_mode == True):
+                new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc,
+                                                      len(tstop_window_alt), tstop_window_alt_avg,
+                                                      len(tstop_window_acc), tstop_window_acc_avg,
+                                                      acc_x, acc_y, acc_z]], 
+                                                    columns=self.actv_sensor_log_cols)
+                self.actv_sensor_log.update(new_sensor_log_entry)
+                self.actv_sensor_log.check_write_log()
 
             if (self.debug_mode == True and run_print_counter == 100):
                 print('===SINGLE ACTIVE STATE CYCLE===')
@@ -250,8 +286,15 @@ class BigWrapper:
             else:
                 run_print_counter += 1
 
+        ### EXITED ACTIVE STATE
+        
         # Call the method on the AeroImageStream to close the capture after active state exit.  
         # self.image_stream.close()
+
+        self.hib_sensor_log.force_write_log()
+        self.actv_sensor_log.force_write_log()
+        self.events_log.force_write_log()
+        self.imaging_log.force_write_log()
 
         if (self.debug_mode == True):
             print('===MAIN SOFTWARE SYSTEM FULL EXIT===')
@@ -267,19 +310,16 @@ class BigWrapper:
             print('Active Timer Start Status:', self._active_timeclock.has_started())
             if (self._active_timeclock.started == True):
                 print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
-
-        self.events_log_df.to_csv('./data_logs/events_log.csv')
-        self.imaging_log_df.to_csv('./data_logs/imaging_log.csv')
-        self.sensor_log_df.to_csv('./data_logs/sensor_log.csv')
     
     def active_exec(self, curr_alt, curr_angle, timestamp):
        
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
-        # if (self.log_mode == True):
-        #     new_imaging_log_entry = pd.DataFrame([[timestamp, curr_alt, curr_angle]],
-        #                                          columns=['timestamp', 'altitude', 'angle'])
-        #     self.imaging_log_df = pd.concat([self.imaging_log_df, new_imaging_log_entry], ignore_index=True)
+        if (self.log_mode == True):
+            new_imaging_log_entry = pd.DataFrame([[timestamp, curr_alt, curr_angle]],
+                                                 columns=self.imaging_log_cols)
+            self.imaging_log.update_log(new_imaging_log_entry)
+            self.imaging_log.check_write_log()
 
         # if (self.debug_mode == True):
         #     print('===SINGLE IMAGE CAPTURED===')
@@ -291,3 +331,9 @@ class BigWrapper:
         #     print('Image Timestamp:', timestamp)
 
         pass
+
+    def force_write_logs(self):
+        self.hib_sensor_log.force_write_log()
+        self.actv_sensor_log.force_write_log()
+        self.events_log.force_write_log()
+        self.imaging_log.force_write_log()
