@@ -45,3 +45,10 @@ class SimAccelReader:
     
     def get_last_accel(self):
         return self.last_read_accel 
+    
+    def get_accel_vectors(self):
+        
+        # NOTE: As we only have magnitude or one-axis acceleration
+        # for our simulated data, we just return (0, 0, 0) when reading sim data.
+
+        return (0, 0, 0)

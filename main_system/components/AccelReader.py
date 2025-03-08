@@ -36,3 +36,13 @@ class AccelReader:
     def get_last_accel(self):
         # Get the last recorded acceleration
         return self.last_read_accel
+    
+    def get_accel_vectors(self):
+        # The raw accelerations are read in as m/s^2
+        accel_x, accel_y, accel_z = self.sensor.acceleration
+
+        conv_accel_x = accel_x * 3.28084
+        conv_accel_y = accel_y * 3.28084
+        conv_accel_z = accel_z * 3.28084
+
+        return (conv_accel_x, conv_accel_y, conv_accel_z)
