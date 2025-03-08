@@ -6,6 +6,7 @@ class DataLogger:
     def __init__(self, filepath: str, max_size: int, disk_write_interval: int, columns: pd.DataFrame):
         self.filepath = filepath
         self.max_size = max_size
+        self.has_written = False
         self.log_write_cnt = 0
         self.disk_write_interval = disk_write_interval
 
@@ -17,9 +18,15 @@ class DataLogger:
     def check_write_log(self):
         if (len(self.log_df) >= self.max_size):
 
-            file_exists = os.path.isfile(self.filepath)
+            if (self.has_written == False):
+                filemode = 'w'
+                file_exists = False
+            elif (self.has_written == True):
+                filemode = 'a'
+                file_exists = os.path.isfile(self.filepath)
 
-            with open(self.filepath, 'a') as fd:
+            with open(self.filepath, filemode) as fd:
+                self.has_written = True
                 self.log_write_cnt += 1
 
                 self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
@@ -36,9 +43,15 @@ class DataLogger:
 
     def force_write_log(self):
 
-        file_exists = os.path.isfile(self.filepath)
+        if (self.has_written == False):
+            filemode = 'w'
+            file_exists = False
+        elif (self.has_written == True):
+            filemode = 'a'
+            file_exists = os.path.isfile(self.filepath)
 
-        with open(self.filepath, 'a') as fd:
+        with open(self.filepath, filemode) as fd:
+            self.has_written = True
             self.log_write_cnt += 1
 
             self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
