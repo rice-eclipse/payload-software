@@ -49,7 +49,9 @@ If the Payload Software team is not available to be consulted, utilize `master`.
 Open the config.json file in payload-software/main_system/components/config.json to modify the control and imaging params.
 
 To run the MSS with the live sensor data streams, run:
+
 `python ./wrapper_live.py`
 
 Alternatively, to run the MSS in a simulated environment using historical or expected flight data, run:
+
 `python ./wrapper_sim.py`
