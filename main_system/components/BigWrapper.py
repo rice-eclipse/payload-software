@@ -266,7 +266,7 @@ class BigWrapper:
                                                       len(tstop_window_acc), tstop_window_acc_avg,
                                                       acc_x, acc_y, acc_z]], 
                                                     columns=self.actv_sensor_log_cols)
-                self.actv_sensor_log.update(new_sensor_log_entry)
+                self.actv_sensor_log.update_log(new_sensor_log_entry)
                 self.actv_sensor_log.check_write_log()
 
             if (self.debug_mode == True and run_print_counter == 100):

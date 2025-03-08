@@ -17,10 +17,11 @@ class DataLogger:
     def check_write_log(self):
         if (len(self.log_df) >= self.max_size):
 
+            file_exists = os.path.isfile(self.filepath)
+
             with open(self.filepath, 'a') as fd:
                 self.log_write_cnt += 1
 
-                file_exists = os.path.isfile(self.filepath)
                 self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
                 # Ensures the log is written immediately to the fd buffer.
                 fd.flush()
@@ -35,10 +36,11 @@ class DataLogger:
 
     def force_write_log(self):
 
+        file_exists = os.path.isfile(self.filepath)
+
         with open(self.filepath, 'a') as fd:
             self.log_write_cnt += 1
 
-            file_exists = os.path.isfile(self.filepath)
             self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
             # Ensures the log is written immediately to the fd buffer.
             fd.flush()
