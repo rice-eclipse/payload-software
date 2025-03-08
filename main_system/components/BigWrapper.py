@@ -311,6 +311,14 @@ class BigWrapper:
             if (self._active_timeclock.started == True):
                 print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
     
+    def emergency_run(self):
+
+        # If we ever enter into a situation where the main run() method of BigWrapper catastrophically fails,
+        # we attempt a last-ditch rapid imaging, hoping that that works.
+
+        while True:
+            self.active_exec('EMERGENCY', 'EMERGENCY', self._active_timeclock.get_curr_timestamp())
+
     def active_exec(self, curr_alt, curr_angle, timestamp):
        
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)

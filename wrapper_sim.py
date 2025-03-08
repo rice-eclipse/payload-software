@@ -29,5 +29,10 @@ maincontroller = BigWrapper(SimAltReader, SimGyroReader, SimAccelReader)
 # Install the signal handler.
 signal.signal(signal.SIGINT, handle_sigint)
 
-# Run the main loop.
-maincontroller.run()
+try:
+    # Run the main loop.
+    maincontroller.run()
+except Exception as e:
+    print(f'Exception caught: {e}.')
+    print('Initializing emergency imaging sequence.')
+    maincontroller.emergency_run()
