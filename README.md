@@ -48,8 +48,8 @@ If the Payload Software team is not available to be consulted, utilize `master`.
 
 Open the config.json file in payload-software/main_system/components/config.json to modify the control and imaging params.
 
-Open the wrapper.py and follow the commented instructions to set the MainSoftwareSystem into testing mode (running in the testing environment on test data) or in deployed mode (running with live sensor data feed from the Pi).
+To run the MSS with the live sensor data streams, run:
+`python ./wrapper_live.py`
 
-To run, navigate back to the payload-software directory and execute the following.
-
-`python ./wrapper.py`
+Alternatively, to run the MSS in a simulated environment using historical or expected flight data, run:
+`python ./wrapper_sim.py`
