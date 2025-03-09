@@ -20,6 +20,12 @@ Create and active a local venv.
 
 `venv\Scripts\Activate.ps1` (Windows Powershell)
 
+Note: If you are on Windows and the venv commands don't seem to work, try the following commands.
+
+`.venv\Scripts\activate` (Windows cmd)
+
+`.venv\Scripts\Activate.ps1` (Windows Powershell)
+
 Install dependencies.
 
 (If on the Raspberry Pi, open requirements.txt and uncomment the `picamera==1.13` line before running the following command.)
