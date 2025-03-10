@@ -2,7 +2,8 @@ import pandas as pd
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-from .AeroImageStream import AeroImageStream
+from .ImagerManager import ImagerManager
+from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
 from .SlidingWindow import SlidingWindow
@@ -31,8 +32,8 @@ class BigWrapper:
         self.gyro_reader = GyroscopeReader(self._sim_sensor_timeclock)
         self.accel_reader= AccelReader(self._sim_sensor_timeclock)
         
-        # self.image_stream = AeroImageStream(self.image_configs)
-
+        self.imager_manager = ImagerManager(self.image_configs)
+        
         self._general_timeclock = TimeClock()
         self._active_timeclock = TimeClock()
 
@@ -288,7 +289,8 @@ class BigWrapper:
 
         ### EXITED ACTIVE STATE
         
-        # Call the method on the AeroImageStream to close the capture after active state exit.  
+        # Call the method on the AeroImageStream to close the capture after active state exit. 
+        self.imager_manager.close_imagers() 
         # self.image_stream.close()
 
         self.hib_sensor_log.force_write_log()
@@ -320,7 +322,7 @@ class BigWrapper:
             self.active_exec('EMERGENCY', 'EMERGENCY', self._active_timeclock.get_curr_timestamp())
 
     def active_exec(self, curr_alt, curr_angle, timestamp):
-       
+        self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
         if (self.log_mode == True):
