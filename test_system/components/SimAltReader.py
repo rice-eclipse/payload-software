@@ -1,9 +1,11 @@
 import csv
 
 class SimAltReader:
-    def __init__(self, timeclock):
+    def __init__(self, ground_alt, timeclock):
         self.timer = timeclock
-        self.path = r'../generatedData/GenAltData.csv'
+        # self.path = r'./test_system/test_data/Archimedes2ExpectedFlightDataJan2025/GenAltData.csv'
+        # self.path = r'./test_system/test_data/EurekaExpectedFlightDataFeb2025/GenAltData.csv'
+        self.path = r'./test_system/test_data/Spaceport2024BasedFlightDataDec2025/GenAltData.csv'
         self.time_keys = []
         self.alt_map = {}
 
@@ -11,7 +13,7 @@ class SimAltReader:
             reader = csv.DictReader(f)
             for lines in reader:
                 time = int(float(lines['time']))
-                alt = float(lines['height'])
+                alt = float(lines['altitude'])
                 self.time_keys.append(time)
                 self.alt_map[time] = alt
 
