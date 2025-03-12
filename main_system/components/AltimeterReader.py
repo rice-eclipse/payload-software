@@ -35,4 +35,5 @@ class AltimeterReader:
         return self.last_read_alt
 
     def get_curr_temperature(self):
+        # Temps are in deg C.
         return self.sensor.temperature
