@@ -1,5 +1,5 @@
 # opencv-python==4.8.1  # Alternative to picamera for testing on Windows.
-# picamera==1.13        # Standard library for picamera.
+picamera==1.13        # Standard library for picamera.
 
 pandas==2.2.3
 numpy==2.2.3
