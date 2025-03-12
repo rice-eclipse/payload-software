@@ -33,3 +33,6 @@ class AltimeterReader:
     
     def get_last_altitude(self):
         return self.last_read_alt
+
+    def get_curr_temperature(self):
+        return self.sensor.temperature

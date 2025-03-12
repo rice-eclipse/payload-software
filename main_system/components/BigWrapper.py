@@ -3,7 +3,6 @@ import pandas as pd
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
 from .ImagerManager import ImagerManager
-from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
 from .SlidingWindow import SlidingWindow
@@ -43,10 +42,10 @@ class BigWrapper:
 
         self.hib_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
                                     't1_win_len', 't1_win_avg', 't2_win_len', 't2_win_avg', 
-                                    't3_win_len', 't3_win_avg', 'accel_x', 'accel_y', 'accel_z']
+                                    't3_win_len', 't3_win_avg', 'accel_x', 'accel_y', 'accel_z', 'temperature']
         self.actv_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
                                     'tstop_win_alt_len', 'tstop_win_alt_avg',
-                                    'tstop_win_acc_len', 'tstop_win_acc_avg', 'accel_x', 'accel_y', 'accel_z']
+                                    'tstop_win_acc_len', 'tstop_win_acc_avg', 'accel_x', 'accel_y', 'accel_z', 'temperature']
         self.events_log_cols = ['timestamp', 'event']
         self.imaging_log_cols = ['timestamp', 'altitude', 'angle']
 
@@ -90,6 +89,7 @@ class BigWrapper:
         curr_angle = self.gyro_reader.get_curr_angle()
         curr_acc = self.accel_reader.get_curr_accel()
         acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
+        temperature = self.alt_reader.get_curr_temperature()
 
         # Used just for the simulated sensor readers.
         # Not directly used in any control logic in BigWrapper.
@@ -122,6 +122,7 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
             # Acceleration vectors only utilized in logging.
             acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
+            temperature = self.alt_reader.get_curr_temperature()
 
             # Update windows with new readings
             t1_window.add(curr_acc, curr_time)
@@ -202,7 +203,7 @@ class BigWrapper:
             if (self.log_mode == True):
                 new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc, 
                                                       len(t1_window), accelc1_avg, len(t2_window), altc2_avg,
-                                                      len(t3_window), altc3_avg, acc_x, acc_y, acc_z]], 
+                                                      len(t3_window), altc3_avg, acc_x, acc_y, acc_z, temperature]], 
                                                     columns=self.hib_sensor_log_cols)
                 self.hib_sensor_log.update_log(new_sensor_log_entry)
                 self.hib_sensor_log.check_write_log()
@@ -265,7 +266,7 @@ class BigWrapper:
                 new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc,
                                                       len(tstop_window_alt), tstop_window_alt_avg,
                                                       len(tstop_window_acc), tstop_window_acc_avg,
-                                                      acc_x, acc_y, acc_z]], 
+                                                      acc_x, acc_y, acc_z, temperature]], 
                                                     columns=self.actv_sensor_log_cols)
                 self.actv_sensor_log.update_log(new_sensor_log_entry)
                 self.actv_sensor_log.check_write_log()
