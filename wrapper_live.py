@@ -25,6 +25,7 @@ maincontroller = BigWrapper(AltimeterReader, GyroscopeReader, AccelReader, TempR
 
 # Install the signal handler.
 signal.signal(signal.SIGINT, handle_sigint)
+signal.signal(signal.SIGTERM, handle_sigint)
 
 try:
     # Run the main loop.

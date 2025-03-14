@@ -10,7 +10,7 @@ from test_system.components.SimTempReader import SimTempReader
 
 # An asynchronous signal handler.
 # If the user hits CTRL+C, dump the logs to disk and exit regardless of our position in the BigWrapper loops.
-def handle_sigint(signum, frame):
+def handle_termination(signum, frame):
     print('Handling SIGINT. Dumping logs.')
     
     if (maincontroller != None):
@@ -28,7 +28,8 @@ def handle_sigint(signum, frame):
 maincontroller = BigWrapper(SimAltReader, SimGyroReader, SimAccelReader, SimTempReader)
 
 # Install the signal handler.
-signal.signal(signal.SIGINT, handle_sigint)
+signal.signal(signal.SIGINT, handle_termination)
+signal.signal(signal.SIGTERM, handle_termination)
 
 try:
     # Run the main loop.
