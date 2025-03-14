@@ -212,7 +212,7 @@ class BigWrapper:
                 self.hib_sensor_log.update_log(new_sensor_log_entry)
                 self.hib_sensor_log.check_write_log()
                 
-            if (self.debug_mode == True and sleep_print_counter == 100):
+            if (self.debug_mode == True and sleep_print_counter == 30):
                 print('===SINGLE HIBERNATION CYCLE===')
                 print('Altitude Reading:', curr_alt)
                 print('Average Altitude Window Reading:', altc2_avg, altc3_avg)
@@ -277,7 +277,7 @@ class BigWrapper:
                 self.actv_sensor_log.update_log(new_sensor_log_entry)
                 self.actv_sensor_log.check_write_log()
 
-            if (self.debug_mode == True and run_print_counter == 100):
+            if (self.debug_mode == True and run_print_counter == 30):
                 print('===SINGLE ACTIVE STATE CYCLE===')
                 print('Altitude Reading:', curr_alt)
                 print('Average Altitude Window Reading:', tstop_window_alt_avg)
