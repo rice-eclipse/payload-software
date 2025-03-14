@@ -1,15 +1,16 @@
 import pandas as pd
+import os
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-from .ImagerManager import ImagerManager
+# from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
 from .SlidingWindow import SlidingWindow
 from .DataLogger import DataLogger
 
 class BigWrapper:
-    def __init__(self, AltimeterReader, GyroscopeReader, AccelReader):
+    def __init__(self, AltimeterReader, GyroscopeReader, AccelReader, TempReader):
         # The configs object is broken down into two big config objects that are nested within the overall configs object
         # and some miscellaneous configs. 
         
@@ -29,9 +30,10 @@ class BigWrapper:
         ground_alt = self.exstate_configs["ground_alt"]
         self.alt_reader = AltimeterReader(ground_alt, self._sim_sensor_timeclock) 
         self.gyro_reader = GyroscopeReader(self._sim_sensor_timeclock)
-        self.accel_reader= AccelReader(self._sim_sensor_timeclock)
+        self.accel_reader = AccelReader(self._sim_sensor_timeclock)
+        self.temp_reader = TempReader()
         
-        self.imager_manager = ImagerManager(self.image_configs)
+        # self.imager_manager = ImagerManager(self.image_configs)
         
         self._general_timeclock = TimeClock()
         self._active_timeclock = TimeClock()
@@ -42,10 +44,10 @@ class BigWrapper:
 
         self.hib_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
                                     't1_win_len', 't1_win_avg', 't2_win_len', 't2_win_avg', 
-                                    't3_win_len', 't3_win_avg', 'accel_x', 'accel_y', 'accel_z', 'temperature']
+                                    't3_win_len', 't3_win_avg', 'accel_x', 'accel_y', 'accel_z', 'pl_temp', 'core_temp']
         self.actv_sensor_log_cols = ['timestamp', 'altitude', 'angle', 'accel_mag', 
                                     'tstop_win_alt_len', 'tstop_win_alt_avg',
-                                    'tstop_win_acc_len', 'tstop_win_acc_avg', 'accel_x', 'accel_y', 'accel_z', 'temperature']
+                                    'tstop_win_acc_len', 'tstop_win_acc_avg', 'accel_x', 'accel_y', 'accel_z', 'pl_temp', 'core_temp']
         self.events_log_cols = ['timestamp', 'event']
         self.imaging_log_cols = ['timestamp', 'altitude', 'angle']
 
@@ -89,7 +91,8 @@ class BigWrapper:
         curr_angle = self.gyro_reader.get_curr_angle()
         curr_acc = self.accel_reader.get_curr_accel()
         acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
-        temperature = self.alt_reader.get_curr_temperature()
+        pl_temp = self.temp_reader.get_pl_temp()
+        core_temp = self.temp_reader.get_core_temp()
 
         # Used just for the simulated sensor readers.
         # Not directly used in any control logic in BigWrapper.
@@ -122,7 +125,8 @@ class BigWrapper:
             curr_acc = self.accel_reader.get_curr_accel()
             # Acceleration vectors only utilized in logging.
             acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
-            temperature = self.alt_reader.get_curr_temperature()
+            pl_temp = self.temp_reader.get_pl_temp()
+            core_temp = self.temp_reader.get_core_temp()
 
             # Update windows with new readings
             t1_window.add(curr_acc, curr_time)
@@ -203,7 +207,7 @@ class BigWrapper:
             if (self.log_mode == True):
                 new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc, 
                                                       len(t1_window), accelc1_avg, len(t2_window), altc2_avg,
-                                                      len(t3_window), altc3_avg, acc_x, acc_y, acc_z, temperature]], 
+                                                      len(t3_window), altc3_avg, acc_x, acc_y, acc_z, pl_temp, core_temp]], 
                                                     columns=self.hib_sensor_log_cols)
                 self.hib_sensor_log.update_log(new_sensor_log_entry)
                 self.hib_sensor_log.check_write_log()
@@ -242,6 +246,8 @@ class BigWrapper:
             curr_angle = self.gyro_reader.get_curr_angle()
             curr_acc = self.accel_reader.get_curr_accel()
             acc_x, acc_y, acc_z = self.accel_reader.get_accel_vectors()
+            pl_temp = self.temp_reader.get_pl_temp()
+            core_temp = self.temp_reader.get_core_temp()
 
             tstop_window_acc.add(curr_acc, curr_time)
             tstop_window_alt.add(curr_alt, curr_time)
@@ -266,7 +272,7 @@ class BigWrapper:
                 new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc,
                                                       len(tstop_window_alt), tstop_window_alt_avg,
                                                       len(tstop_window_acc), tstop_window_acc_avg,
-                                                      acc_x, acc_y, acc_z, temperature]], 
+                                                      acc_x, acc_y, acc_z, pl_temp, core_temp]], 
                                                     columns=self.actv_sensor_log_cols)
                 self.actv_sensor_log.update_log(new_sensor_log_entry)
                 self.actv_sensor_log.check_write_log()
@@ -291,7 +297,7 @@ class BigWrapper:
         ### EXITED ACTIVE STATE
         
         # Call the method on the AeroImageStream to close the capture after active state exit. 
-        self.imager_manager.close_imagers() 
+        # self.imager_manager.close_imagers() 
         # self.image_stream.close()
 
         self.hib_sensor_log.force_write_log()
@@ -323,7 +329,7 @@ class BigWrapper:
             self.active_exec('EMERGENCY', 'EMERGENCY', self._active_timeclock.get_curr_timestamp())
 
     def active_exec(self, curr_alt, curr_angle, timestamp):
-        self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
+        # self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
         if (self.log_mode == True):

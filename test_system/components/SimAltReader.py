@@ -47,6 +47,3 @@ class SimAltReader:
     
     def get_last_atitude(self):
         return self.last_read_alt 
-    
-    def get_curr_temperature(self):
-        return 0
