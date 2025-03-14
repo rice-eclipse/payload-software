@@ -256,7 +256,7 @@ class BigWrapper:
             tstop_window_alt_avg = tstop_window_alt.avg()
             tstop_window_acc_avg = tstop_window_acc.avg()
             
-            if (tstop_window_alt_avg <= 40 and (-0.05 <= tstop_window_acc_avg <= 0.05)):
+            if (tstop_window_alt_avg <= -200 and (-0.05 <= tstop_window_acc_avg <= 0.05)):
                 run_condition = False
 
                 if (self.log_mode == True):
