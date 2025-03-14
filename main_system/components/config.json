@@ -8,7 +8,7 @@
     }],
     "exstate_configs" : {
         "imaging_max_angle" : 0.69,
-        "ground_alt" : 180,
+        "ground_alt" : 170,
         "sleep_exit_altitude_h1": 20,
         "sleep_exit_altitude_h2": 30,
         "sleep_exit_altitude_h3": 40,
