@@ -1,11 +1,11 @@
 {
-    "imaging_configs" : {
-        "filepath" : "./ImageDump",
+    "imaging_configs" : [{
+        "filepath" : "./image_dump/Imager1/",
         "xres" : 400,
         "yres" : 400,
         "iso" : 600,
         "exposure_mode" : "off"
-    },
+    }],
     "exstate_configs" : {
         "imaging_max_angle" : 0.69,
         "ground_alt" : 0,

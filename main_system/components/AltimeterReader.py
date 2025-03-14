@@ -21,7 +21,6 @@ class AltimeterReader:
         # Object for getting time. Not utilized in this reader, but kept for standardization with simulated readers.  
         self.timer = timeclock
 
-
     def get_curr_altitude(self):
         self.last_read_alt = self.curr_alt
 

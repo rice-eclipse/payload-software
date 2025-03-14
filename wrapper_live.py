@@ -6,10 +6,11 @@ from main_system.components.BigWrapper import BigWrapper
 from main_system.components.AltimeterReader import AltimeterReader
 from main_system.components.GyroscopeReader import GyroscopeReader
 from main_system.components.AccelReader import AccelReader
+from main_system.components.TempReader import TempReader
 
 # An asynchronous signal handler.
 # If the user hits CTRL+C, dump the logs to disk and exit regardless of our position in the BigWrapper loops.
-def handle_sigint(signum, frame):
+def handle_termination(signum, frame):
     print('Handling SIGINT. Dumping logs.')
     
     if (maincontroller != None):
@@ -20,10 +21,11 @@ def handle_sigint(signum, frame):
 # is contained in config.json.
 
 # Note that BigWrapper reads its control and imaging configs from config.json in ./main_system/components/config.json
-maincontroller = BigWrapper(AltimeterReader, GyroscopeReader, AccelReader)
+maincontroller = BigWrapper(AltimeterReader, GyroscopeReader, AccelReader, TempReader)
 
 # Install the signal handler.
-signal.signal(signal.SIGINT, handle_sigint)
+signal.signal(signal.SIGINT, handle_termination)
+signal.signal(signal.SIGTERM, handle_termination)
 
 try:
     # Run the main loop.
