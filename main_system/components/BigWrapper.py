@@ -329,7 +329,7 @@ class BigWrapper:
             self.active_exec('EMERGENCY', 'EMERGENCY', self._active_timeclock.get_curr_timestamp())
 
     def active_exec(self, curr_alt, curr_angle, timestamp):
-        self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
+        self.imager_manager.capture_images(curr_alt, curr_angle, timestamp)
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
         if (self.log_mode == True):
