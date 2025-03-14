@@ -3,7 +3,7 @@ import os
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-# from .ImagerManager import ImagerManager
+from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
 from .SlidingWindow import SlidingWindow
@@ -33,7 +33,7 @@ class BigWrapper:
         self.accel_reader = AccelReader(self._sim_sensor_timeclock)
         self.temp_reader = TempReader()
         
-        # self.imager_manager = ImagerManager(self.image_configs)
+        self.imager_manager = ImagerManager(self.image_configs)
         
         self._general_timeclock = TimeClock()
         self._active_timeclock = TimeClock()
@@ -297,7 +297,7 @@ class BigWrapper:
         ### EXITED ACTIVE STATE
         
         # Call the method on the AeroImageStream to close the capture after active state exit. 
-        # self.imager_manager.close_imagers() 
+        self.imager_manager.close_imagers() 
         # self.image_stream.close()
 
         self.hib_sensor_log.force_write_log()
@@ -329,7 +329,7 @@ class BigWrapper:
             self.active_exec('EMERGENCY', 'EMERGENCY', self._active_timeclock.get_curr_timestamp())
 
     def active_exec(self, curr_alt, curr_angle, timestamp):
-        # self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
+        self.imager_manager.capture_images(curr_alt, curr_angle,  timestamp)
         # self.image_stream.capture_image(curr_alt, curr_angle, timestamp)
 
         if (self.log_mode == True):
@@ -338,16 +338,14 @@ class BigWrapper:
             self.imaging_log.update_log(new_imaging_log_entry)
             self.imaging_log.check_write_log()
 
-        # if (self.debug_mode == True):
-        #     print('===SINGLE IMAGE CAPTURED===')
-        #     print('Image Altitude:', curr_alt)
-        #     print('Image Angle:', curr_angle)
-        #     print('Active Timer Start Status:', self._active_timeclock.has_started())
-        #     if (self._active_timeclock.started == True):
-        #         print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
-        #     print('Image Timestamp:', timestamp)
-
-        pass
+        if (self.debug_mode == True):
+            print('===SINGLE IMAGE CAPTURED===')
+            print('Image Altitude:', curr_alt)
+            print('Image Angle:', curr_angle)
+            print('Active Timer Start Status:', self._active_timeclock.has_started())
+            if (self._active_timeclock.started == True):
+                print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
+            print('Image Timestamp:', timestamp)
 
     def force_write_logs(self):
         self.hib_sensor_log.force_write_log()
