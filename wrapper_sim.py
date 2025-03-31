@@ -25,7 +25,8 @@ def handle_termination(signum, frame):
 # simulated readers need to be configured in their respective files.
 
 # Note that the simulated readers need to have their paths reconfigured in their files to the desired data sources.
-maincontroller = BigWrapper(SimAltReader, SimGyroReader, SimAccelReader, SimTempReader)
+config_path = './main_system/components/config.json'
+maincontroller = BigWrapper(config_path, SimAltReader, SimGyroReader, SimAccelReader, SimTempReader)
 
 # Install the signal handler.
 signal.signal(signal.SIGINT, handle_termination)

@@ -10,12 +10,12 @@ from .SlidingWindow import SlidingWindow
 from .DataLogger import DataLogger
 
 class BigWrapper:
-    def __init__(self, AltimeterReader, GyroscopeReader, AccelReader, TempReader):
+    def __init__(self, config_path, AltimeterReader, GyroscopeReader, AccelReader, TempReader):
         # The configs object is broken down into two big config objects that are nested within the overall configs object
         # and some miscellaneous configs.
 
         # Because wrapper.py is where BigWrapper is initialized, the current working dir is /payload-software/, not /main_system/components.
-        self.config_loader = ConfigLoader('./main_system/components/config.json')
+        self.config_loader = ConfigLoader(config_path)
         # Load the entire config object.
         self.configs = self.config_loader.fetch_all_configs()
         # Load the nested configs for the imaging process.

@@ -21,7 +21,8 @@ def handle_termination(signum, frame):
 # is contained in config.json.
 
 # Note that BigWrapper reads its control and imaging configs from config.json in ./main_system/components/config.json
-maincontroller = BigWrapper(AltimeterReader, GyroscopeReader, AccelReader, TempReader)
+config_path = './main_system/components/config.json'
+maincontroller = BigWrapper(config_path, AltimeterReader, GyroscopeReader, AccelReader, TempReader)
 
 # Install the signal handler.
 signal.signal(signal.SIGINT, handle_termination)
