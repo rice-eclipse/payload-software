@@ -5,6 +5,15 @@ import pandas as pd
 class DataLogger:
     def __init__(self, filepath: str, max_size: int, disk_write_interval: int, columns: pd.DataFrame):
         self.filepath = filepath
+
+        counter = 0
+        unique_path = self.filepath
+        while os.path.isfile(unique_path):
+            counter += 1
+            unique_path = self.filepath[:-3] + '_' + str(counter) + '.py'
+
+        self.filepath = unique_path
+
         self.max_size = max_size
         self.has_written = False
         self.log_write_cnt = 0
@@ -32,7 +41,7 @@ class DataLogger:
                 self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
                 # Ensures the log is written immediately to the fd buffer.
                 fd.flush()
-                
+
                 if (self.log_write_cnt >= self.disk_write_interval):
                     self.log_write_cnt = 0
                     # Forces a disk write.
@@ -57,7 +66,7 @@ class DataLogger:
             self.log_df.to_csv(fd, mode='a', header=(not file_exists), index=False)
             # Ensures the log is written immediately to the fd buffer.
             fd.flush()
-            
+
             self.log_write_cnt = 0
             # Forces a disk write.
             os.fsync(fd.fileno())

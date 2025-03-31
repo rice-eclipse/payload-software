@@ -28,15 +28,23 @@ class AeroImageStream:
         self.yres = configs['yres']
         self.camera = PiCamera()
         self.camera.resolution = (self.xres, self.yres)
-        self.camera.iso = configs['iso']
-        sleep(2)
-        self.camera.shutter_speed = self.camera.exposure_speed
-        self.camera.exposure_mode = configs['exposure_mode']
-        whitebalance = self.camera.awb_gains
-        self.camera.awb_mode = 'off'
-        self.camera.awb_gains = whitebalance
 
-    def capture_image(self, altitude, angle, time):
+        if (configs['exposure_mode'] == 'auto'):
+            self.camera.exposure_mode = configs['exposure_mode']
+            self.camera.awb_mode = 'auto'
+        else:
+            self.camera.iso = configs['iso']
+            sleep(2)
+
+            self.camera.exposure_mode = configs['exposure_mode']
+            self.camera.shutter_speed = self.camera.exposure_speed
+            self.camera.exposure_mode = configs['exposure_mode']
+
+            whitebalance = self.camera.awb_gains
+            self.camera.awb_mode = 'off'
+            self.camera.awb_gains = whitebalance
+
+    def capture_image(self, altitude, angle, timeval):
         """
         Capture an image and save it to the specified storage path.
 
@@ -51,7 +59,19 @@ class AeroImageStream:
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
 
-        filename = f"{self.storagepath}/{altitude}&{angle}&{time}.jpg"
+        timestamp = str(int(timeval))
+        altstamp = f"{float(altitude):.2f}"
+        altstamp = altstamp.replace('.', '_')
+        anglestamp = f"{float(angle):.2f}"
+        anglestamp = anglestamp.replace('.', '_')
+
+        isostamp = f"{float(self.camera.iso):.2f}"
+        shutterstamp = f"{float(self.camera.shutter_speed):.2f}"
+        awbredstamp = f"{float(self.camera.awb_gains[0]):.2f}"
+        awbbluestamp = f"{float(self.camera.awb_gains[1]):.2f}"
+        awbstamp = f"{awbredstamp}_{awbbluestamp}"
+
+        filename = f"{self.storagepath}/{timestamp}&{altstamp}&{anglestamp}-{isostamp}&{shutterstamp}&{awbstamp}.jpg"
         self.camera.capture(filename)
         return filename
 
