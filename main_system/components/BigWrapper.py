@@ -266,7 +266,7 @@ class BigWrapper:
                     self.events_log.check_write_log
 
             # Call the code to conduct all of the operations we want to do for a single active state cycle.
-            self.active_exec(curr_alt, curr_angle, curr_time)
+            self.active_exec(curr_time, curr_alt, curr_angle)
 
             if (self.log_mode == True):
                 new_sensor_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle, curr_acc,
@@ -326,11 +326,11 @@ class BigWrapper:
         # we attempt a last-ditch rapid imaging, hoping that that works.
 
         while True:
-            self.active_exec('EMERGENCY', 'EMERGENCY', self._general_timeclock.get_curr_deltatime())
+            self.active_exec(self._general_timeclock.get_curr_deltatime(), 'EMERGENCY', 'EMERGENCY')
 
-    def active_exec(self, curr_alt, curr_angle, curr_time):
-        self.imager_manager.capture_images(curr_alt, curr_angle, curr_time)
-        # self.image_stream.capture_image(curr_alt, curr_angle, curr_time)
+    def active_exec(self, curr_time, curr_alt, curr_angle):
+        self.imager_manager.capture_images(curr_time, curr_alt, curr_angle)
+        # self.image_stream.capture_image(curr_time, curr_alt, curr_angle)
 
         if (self.log_mode == True):
             new_imaging_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle]],
@@ -340,12 +340,12 @@ class BigWrapper:
 
         if (self.debug_mode == True):
             print('===SINGLE IMAGE CAPTURED===')
+            print('Image Timestamp (General Timer):', curr_time)
             print('Image Altitude:', curr_alt)
             print('Image Angle:', curr_angle)
             print('Active Timer Start Status:', self._active_timeclock.has_started())
             if (self._active_timeclock.started == True):
                 print('    Active Timer Time:', self._active_timeclock.get_curr_deltatime())
-            print('Image Timestamp:', curr_time)
 
     def force_write_logs(self):
         self.hib_sensor_log.force_write_log()

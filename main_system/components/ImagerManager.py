@@ -11,9 +11,9 @@ class ImagerManager:
             current_image_stream = AeroImageStream(image_config)
             self.imagers.append(current_image_stream)
 
-    def capture_images(self, altitude, angle, time):
+    def capture_images(self, time, altitude, angle):
         for imager in self.imagers:
-            imager.capture_image(altitude, angle, time)
+            imager.capture_image(time, altitude, angle)
 
     def close_imagers(self):
         for imager in self.imagers:

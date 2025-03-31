@@ -44,7 +44,7 @@ class AeroImageStream:
             self.camera.awb_mode = 'off'
             self.camera.awb_gains = whitebalance
 
-    def capture_image(self, altitude, angle, timeval):
+    def capture_image(self, timeval, altitude, angle):
         """
         Capture an image and save it to the specified storage path.
 
@@ -59,19 +59,39 @@ class AeroImageStream:
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
 
-        timestamp = str(int(timeval))
-        altstamp = f"{float(altitude):.2f}"
-        altstamp = altstamp.replace('.', '_')
-        anglestamp = f"{float(angle):.2f}"
-        anglestamp = anglestamp.replace('.', '_')
+        if (type(timestamp) == str):
+            timestamp = timeval
+        elif (type(timestamp) == int or type(timestamp) == float):
+            timestamp = str(int(timeval))
+        else:
+            timestamp = 'TIMEUNDEF'
+
+        if (type(altstamp) == str):
+            altstamp = altitude
+        elif (type(altstamp) == float or type(altstamp) == int):
+            altstamp = f"{float(altitude):.2f}"
+            altstamp = altstamp.replace('.', '_')
+        else:
+            altstamp = 'ALTUNDEF'
+
+        if (type(anglestamp) == str):
+            anglestamp = angle
+        elif (type(anglestamp) == float or type(anglestamp) == int):
+            anglestamp = f"{float(angle):.2f}"
+            anglestamp = anglestamp.replace('.', '_')
+        else:
+            anglestamp = 'ANGLEUNDEF'
 
         isostamp = f"{float(self.camera.iso):.2f}"
+        isostamp = isostamp.replace('.', '_')
         shutterstamp = f"{float(self.camera.shutter_speed):.2f}"
         awbredstamp = f"{float(self.camera.awb_gains[0]):.2f}"
+        awbredstamp = awbredstamp.replace('.', '_')
         awbbluestamp = f"{float(self.camera.awb_gains[1]):.2f}"
-        awbstamp = f"{awbredstamp}_{awbbluestamp}"
+        awbbluestamp = awbbluestamp.replace('.', '_')
+        awbstamp = f"[{awbredstamp}___{awbbluestamp}]"
 
-        filename = f"{self.storagepath}/{timestamp}&{altstamp}&{anglestamp}-{isostamp}&{shutterstamp}&{awbstamp}.jpg"
+        filename = f"{self.storagepath}/&ENVINFO&[{timestamp}&{altstamp}&{anglestamp}]&IMGINFO&{isostamp}&{shutterstamp}&WBINFO&{awbstamp}.jpg"
         self.camera.capture(filename)
         return filename
 
