@@ -1,0 +1,26 @@
+{
+    "imaging_configs" : [
+        {
+            "filepath" : "./image_dump/Imager4A-Auto/",
+            "xres" : 400,
+            "yres" : 400,
+            "exposure_mode" : "auto"
+        }
+    ],
+    "exstate_configs" : {
+        "imaging_max_angle" : 0.69,
+        "ground_alt" : 50,
+        "sleep_exit_altitude_h1": 500,
+        "sleep_exit_altitude_h2": 1300,
+        "sleep_exit_altitude_h3": 1800,
+        "sleep_exit_accel_a1": 500,
+        "sleep_exit_time_tstar": 160000,
+        "sleep_exit_time_t1": 500,
+        "sleep_exit_time_t2": 2000,
+        "sleep_exit_time_t3": 2000,
+        "sleep_exit_time_tstop": 30000
+    },
+    "debug_mode": true,
+    "log_mode": true,
+    "max_log_size": 100
+}

@@ -1,0 +1,37 @@
+import signal
+import sys
+
+from main_system.components.BigWrapper import BigWrapper
+
+from main_system.components.DummyAltimeterReader import DummyActvAltimeterReader
+from main_system.components.GyroscopeReader import GyroscopeReader
+from main_system.components.AccelReader import AccelReader
+from main_system.components.TempReader import TempReader
+
+# An asynchronous signal handler.
+# If the user hits CTRL+C, dump the logs to disk and exit regardless of our position in the BigWrapper loops.
+def handle_termination(signum, frame):
+    print('Handling SIGINT. Dumping logs.')
+    
+    if (maincontroller != None):
+        maincontroller.force_write_logs()
+        sys.exit(0)
+
+# All configs related to running the MainSoftwareSystem in its real launch configuration
+# is contained in config.json.
+
+# Note that BigWrapper reads its control and imaging configs from config.json in ./main_system/components/config.json
+config_path = './main_system/components/draintest_actv_config.json'
+maincontroller = BigWrapper(config_path, DummyActvAltimeterReader, GyroscopeReader, AccelReader, TempReader)
+
+# Install the signal handler.
+signal.signal(signal.SIGINT, handle_termination)
+signal.signal(signal.SIGTERM, handle_termination)
+
+try:
+    # Run the main loop.
+    maincontroller.run()
+except Exception as e:
+    print(f'Exception caught: {e}.')
+    print('Initializing emergency imaging sequence.')
+    maincontroller.emergency_run()
