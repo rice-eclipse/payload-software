@@ -3,7 +3,7 @@ import sys
 
 from main_system.components.BigWrapper import BigWrapper
 
-from main_system.components.DummyAltimeterReader import DummyActvAltimeterReader
+from main_system.components.AltimeterReader import AltimeterReader
 from main_system.components.GyroscopeReader import GyroscopeReader
 from main_system.components.AccelReader import AccelReader
 from main_system.components.TempReader import TempReader
@@ -22,7 +22,7 @@ def handle_termination(signum, frame):
 
 # Note that BigWrapper reads its control and imaging configs from config.json in ./main_system/components/config.json
 config_path = './main_system/components/draintest_actv_config.json'
-maincontroller = BigWrapper(config_path, DummyActvAltimeterReader, GyroscopeReader, AccelReader, TempReader)
+maincontroller = BigWrapper(config_path, AltimeterReader, GyroscopeReader, AccelReader, TempReader)
 
 # Install the signal handler.
 signal.signal(signal.SIGINT, handle_termination)
