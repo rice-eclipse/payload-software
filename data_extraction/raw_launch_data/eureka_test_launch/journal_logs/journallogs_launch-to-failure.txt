@@ -105512,5 +105512,3 @@ Mar 14 21:21:20 rpayload python[457]: Image Angle: 1.6832925969660932
 Mar 14 21:21:20 rpayload python[457]: Active Timer Start Status: True
 Mar 14 21:21:20 rpayload python[457]:     Active Timer Time: 179648
 Mar 14 21:21:20 rpayload python[457]: Image Timestamp: 5739310
-Mar 14 21:21:20 rpayload python[457]: ===SINGLE ACTIVE STATE CYCLE===
-Mar 14 21:21:20 rpayload python[457]: Altitude Reading: 460.013258602748
