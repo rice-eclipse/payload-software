@@ -12,6 +12,11 @@ class Hypercube:
         # Output: Hypercube instance (constructor)
         self.hypercube = hypercube
         self.wavebands = wavebands
+        self.max_wavelength = 0
+        self.min_wavelength = 0
+        if wavebands is not None:
+            self.max_wavelength = np.max(wavebands)
+            self.min_wavelength = np.min(wavebands)
 
     def load_from_images(self, dir_name):
         # Load a hypercube from a directory of images as outputted by squareHSI
@@ -24,7 +29,7 @@ class Hypercube:
 
         # Load all images and insert image data and wavelengths into our premade arrays
         for freq_idx in range(len(freq_imgs_filenames)):
-            img = Image.open(hypercube_dir + "\\" + freq_imgs_filenames[freq_idx])
+            img = Image.open(dir_name + "\\" + freq_imgs_filenames[freq_idx])
             img_arr = np.array(img) / 255  # convert ints to floats
             mag_arr = 0.299 * img_arr[:, :, 0] + 0.587 * img_arr[:,:,1] + 0.114 * img_arr[:,:,2]  # Assuming we just want the magnitude of the image; hopefully, all bands are equal
             hypercube[:, :, freq_idx] = mag_arr
@@ -50,7 +55,7 @@ class Hypercube:
     def grayscale_average(self, filename):
         # Very simply see what data we actually have by averaging all frequencies and scaling to make pixels visible (--> grayscale)
         # Input: filename - name of file that grayscale_average image will be saved to
-        `# Output: None, saves an image file to filename
+        # Output: None, saves an image file to filename
         avg_hyperimg = np.mean(self.hypercube, axis=2)
         # Scale between 0-255 (no gamma correction)
         avg_hyperimg = 255 * avg_hyperimg / np.max(avg_hyperimg)
@@ -79,8 +84,34 @@ class Hypercube:
         field = (1 - frac) * self.hypercube[:, :, lower_wavelength_idx] + frac * self.hypercube[:, :, higher_wavelength_idx]
         return field
 
+    def image_from_wavelengths(self, request_wl_arr, color_map, filename, renormalize=True):
+        # Creates an image with the given wavelengths, colorizing it according to the function color_map
+        # Inputs:
+        # wl_arr: 1xn array of wavelengths to include in the final image
+        # color_map: function that accepts wl_arr and outputs a 3xn array of RGB values (0-1) that correspond to each wavelength
+        # filename: location/name to save the resulting file to
+        # renormalize: boolean, whether to scale the colors so that the brightest pixel is full brightness
+        # Output: None, saves an image instead
 
-hypercube_dir = "data\\hypercubes\\testhypercube"
+        wl_arr = request_wl_arr[(self.min_wavelength < request_wl_arr) * (request_wl_arr < self.max_wavelength)]
+        if wl_arr.size < request_wl_arr.size:
+            print("Some wavelengths out of range")
+
+        # Add colors depending on the camera's response to each frequency
+        reconstructed_img_arr = np.zeros(np.concatenate((self.hypercube.shape[0:2], [3]), 0))
+        # Get RGB colors for each wavelength
+        wl_rgb = color_map(wl_arr)
+        for wl_idx in range(wl_arr.size):
+            # Add these responses to the reconstructed image
+            wl_field = self.field_of_wavelength(wl_arr[wl_idx])
+            reconstructed_img_arr[:, :, 0] += wl_rgb[wl_idx, 0] * wl_field
+            reconstructed_img_arr[:, :, 1] += wl_rgb[wl_idx, 1] * wl_field
+            reconstructed_img_arr[:, :, 2] += wl_rgb[wl_idx, 2] * wl_field
+        if renormalize:
+            # Scale values so that the brightest = 1
+            reconstructed_img_arr /= np.max(reconstructed_img_arr)
+        reconstructed_img = Image.fromarray((255 * reconstructed_img_arr).astype(np.int8), 'RGB')
+        reconstructed_img.save(filename)
 
 
 def wavelength_to_true_color_RGB(wl_arr):
@@ -94,6 +125,7 @@ def wavelength_to_true_color_RGB(wl_arr):
     waveMax = 942.607
     waveRes = 1.98421
     wavebands = np.arange(waveMin, waveMax, waveRes)  # these correspond to the following sensitivities
+    # These sensitivities are from squareHSI
     Sr = [0.0735705, 0.0730705, 0.0751069, 0.0788332, 0.0829839, 0.0875103, 0.0921378, 0.0968915, 0.101217, 0.104702,
           0.10627, 0.108209, 0.109125, 0.109116, 0.109033, 0.111097, 0.114269, 0.119024, 0.12467, 0.131261, 0.138731,
           0.14769, 0.154919, 0.159749, 0.16006, 0.159222, 0.159049, 0.156801, 0.15314, 0.148856, 0.147445, 0.147387,
@@ -173,32 +205,34 @@ def wavelength_to_true_color_RGB(wl_arr):
           0.476147, 0.465571, 0.453536, 0.443163, 0.432753, 0.419601, 0.41017, 0.399315, 0.389636, 0.379744, 0.370189,
           0.359829, 0.348918, 0.338533, 0.329845, 0.320842, 0.312323, 0.304231, 0.296744, 0.289157, 0.280837, 0.272107,
           0.262909, 0.254038, 0.245292, 0.237124, 0.228901, 0.221463, 4.57722e-6]
-    rgb_arr = np.zeros()
+    rgb_arr = np.zeros((wl_arr.shape[0], 3))
+    # I could do this with loopless Numpy math, but it would create some pretty massive arrays
+    for wl_idx in range(wl_arr.size):
+        if wl_idx == wavebands.size-1:
+            # Something wasn't working so I'm just going to assume this fixes it
+            continue
+        if wl_arr[wl_idx] in wavebands:
+            idx = np.argmin(np.abs(wavebands - wl_arr[wl_idx]), axis=0)
+            rgb_arr[wl_idx, 0] = Sr[idx]
+            rgb_arr[wl_idx, 1] = Sg[idx]
+            rgb_arr[wl_idx, 2] = Sb[idx]
+        else:
+            lower_wavelength_idx = np.argmin(np.abs(wavebands - wl_arr[wl_idx]) + 1000 * (wavebands > wl_arr[wl_idx]), axis=0)
+            upper_wavelength_idx = np.argmin(np.abs(wavebands - wl_arr[wl_idx]) + 1000 * (wavebands < wl_arr[wl_idx]), axis=0)
+            frac = (wl_arr[wl_idx] - wavebands[lower_wavelength_idx]) / (wavebands[upper_wavelength_idx] - wavebands[lower_wavelength_idx])
+            rgb_arr[wl_idx, 0] = (1 - frac) * Sr[lower_wavelength_idx] + frac * Sr[upper_wavelength_idx]
+            rgb_arr[wl_idx, 1] = (1 - frac) * Sg[lower_wavelength_idx] + frac * Sg[upper_wavelength_idx]
+            rgb_arr[wl_idx, 2] = (1 - frac) * Sb[lower_wavelength_idx] + frac * Sb[upper_wavelength_idx]
+    return rgb_arr
 
 
-
-
-# hypercube.grayscale_average("results\\average_gray.png")
-
-# Add colors depending on the camera's response to each frequency
-reconstructed_img_arr = np.zeros(np.concatenate((hypercube.shape[0:2], [3]), 0))
-for freq_idx in range(len(wavebands)):
-    # Decide if this frequency will be included
-    if 700 <= wavebands[freq_idx] <= 1000:
-        continue
-    # Get the camera color response for this frequency
-    red_response = Sr[wavelength_to_nearest_idx(700, wavebands) - freq_idx]
-    green_response = Sg[wavelength_to_nearest_idx(700, wavebands) - freq_idx]
-    blue_response = Sb[wavelength_to_nearest_idx(700, wavebands) - freq_idx]
-    # Add these responses to the reconstructed image
-    reconstructed_img_arr[:, :, 0] += red_response * hypercube[:, :, freq_idx]
-    reconstructed_img_arr[:, :, 1] += green_response * hypercube[:, :, freq_idx]
-    reconstructed_img_arr[:, :, 2] += blue_response * hypercube[:, :, freq_idx]
-reconstructed_img = Image.fromarray((255 * reconstructed_img_arr).astype(np.int8), 'RGB')
-reconstructed_img.save("results\\reconstructed_reverse.png")
-
-# TODO:
-# Have a way to select which wavelengths to use
-# Add indices / arbitrary function application
-# Have a way to select visualization modes (real-color, heatmap, offset-color)
-#
+if __name__ == "__main__":
+    hypercube = Hypercube(None, None)
+    hypercube.load_from_images("hypercubes\\testhypercube")
+    hypercube.grayscale_average("output\\average_gray.png")
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 700], wavelength_to_true_color_RGB,
+                                     "output\\truecolor.png", renormalize=True)
+    hypercube.image_from_wavelengths(hypercube.wavebands, wavelength_to_true_color_RGB,
+                                     "output\\fullcolor.png", renormalize=True)
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 700], wavelength_to_true_color_RGB,
+                                     "output\\onlyinfrared.png", renormalize=True)
