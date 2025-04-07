@@ -3,7 +3,8 @@ import os
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-from .ImagerManager import ImagerManager
+from .AeroImageStream import AeroImageStream
+# from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
 from .SlidingWindow import SlidingWindow
@@ -33,7 +34,8 @@ class BigWrapper:
         self.accel_reader = AccelReader(self._sim_sensor_timeclock)
         self.temp_reader = TempReader()
 
-        self.imager_manager = ImagerManager(self.image_configs)
+        self.image_stream = AeroImageStream(self.image_configs)
+        # self.imager_manager = ImagerManager(self.image_configs)
 
         self._general_timeclock = TimeClock()
         self._active_timeclock = TimeClock()
@@ -297,8 +299,8 @@ class BigWrapper:
         ### EXITED ACTIVE STATE
 
         # Call the method on the AeroImageStream to close the capture after active state exit.
-        self.imager_manager.close_imagers()
-        # self.image_stream.close()
+        self.image_stream.close()
+        # self.imager_manager.close_imagers()
 
         self.hib_sensor_log.force_write_log()
         self.actv_sensor_log.force_write_log()
@@ -329,8 +331,8 @@ class BigWrapper:
             self.active_exec(self._general_timeclock.get_curr_deltatime(), 'EMERGENCY', 'EMERGENCY')
 
     def active_exec(self, curr_time, curr_alt, curr_angle):
-        self.imager_manager.capture_images(curr_time, curr_alt, curr_angle)
-        # self.image_stream.capture_image(curr_time, curr_alt, curr_angle)
+        self.image_stream.capture_all(curr_time, curr_alt, curr_angle)
+        # self.imager_manager.capture_images(curr_time, curr_alt, curr_angle)
 
         if (self.log_mode == True):
             new_imaging_log_entry = pd.DataFrame([[curr_time, curr_alt, curr_angle]],
