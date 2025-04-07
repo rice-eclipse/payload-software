@@ -23,7 +23,7 @@ class Hypercube:
         # Will automatically collect the wavelengths and construct the hypercube
         # Note that these wavelengths do NOT need to be evenly spaced or continuous
         # Note that this modifies this existing instance of Hypercube
-        freq_imgs_filenames = os.listdir(dir_name)
+        freq_imgs_filenames = [f for f in os.listdir(dir_name) if ".png" in f]
         hypercube = np.zeros((170, 170, len(freq_imgs_filenames)))
         wavebands = np.zeros(len(freq_imgs_filenames))
 
@@ -228,11 +228,11 @@ def wavelength_to_true_color_RGB(wl_arr):
 
 if __name__ == "__main__":
     hypercube = Hypercube(None, None)
-    hypercube.load_from_images("hypercubes\\testhypercube")
-    hypercube.grayscale_average("output\\average_gray.png")
+    hypercube.load_from_images("hypercubes\\indoorleaves")
+    hypercube.grayscale_average("output\\indoorleaves_average.png")
     hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 700], wavelength_to_true_color_RGB,
-                                     "output\\truecolor.png", renormalize=True)
+                                     "output\\indorleaves_truecolor.png", renormalize=True)
     hypercube.image_from_wavelengths(hypercube.wavebands, wavelength_to_true_color_RGB,
-                                     "output\\fullcolor.png", renormalize=True)
+                                     "output\\indoorleaves_fullcolor.png", renormalize=True)
     hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 700], wavelength_to_true_color_RGB,
-                                     "output\\onlyinfrared.png", renormalize=True)
+                                     "output\\indoorleaves_onlyinfrared.png", renormalize=True)
