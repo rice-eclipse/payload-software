@@ -55,14 +55,15 @@ class Hypercube:
             raw_csv = datafile.read()
             data = raw_csv.split(",")
             date_time = data[0]
-            width = data[1]
-            height = data[2]
-            num_wavebands = data[3]
-            wavebands = np.zeros((num_wavebands,1))
+            width = int(data[1])
+            height = int(data[2])
+            num_wavebands = int(data[3])
+            wavebands = np.zeros((num_wavebands))
             for i in range(num_wavebands):
-                wavebands[i,1] = data[i+4]
-            hypercube = np.zeros((width, height, num_wavebands))
-            for
+                wavebands[i] = float(data[i+4])
+            hypercube = np.array(data[4+num_wavebands:]).astype(float)
+            hypercube = hypercube.reshape((num_wavebands, height, width)).transpose((1,2,0))
+            self.__init__(hypercube,wavebands)
 
     def wavelength_to_nearest_idx(self, wl):
         # Finds the nearest wavelength listed in wavebands and returns its index
@@ -249,11 +250,15 @@ def wavelength_to_true_color_RGB(wl_arr):
 
 if __name__ == "__main__":
     hypercube = Hypercube(None, None)
-    hypercube.load_from_images("hypercubes\\indoorleaves")
-    hypercube.grayscale_average("output\\indoorleaves_average.png")
-    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 700], wavelength_to_true_color_RGB,
-                                     "output\\indorleaves_truecolor.png", renormalize=True)
-    hypercube.image_from_wavelengths(hypercube.wavebands, wavelength_to_true_color_RGB,
-                                     "output\\indoorleaves_fullcolor.png", renormalize=True)
-    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 700], wavelength_to_true_color_RGB,
-                                     "output\\indoorleaves_onlyinfrared.png", renormalize=True)
+    # hypercube.load_from_images("hypercubes\\indoorleaves")
+    # hypercube.grayscale_average("output\\indoorleaves_average.png")
+    # hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,
+    #                                  "output\\indorleaves_truecolor.png", renormalize=True)
+    # hypercube.image_from_wavelengths(hypercube.wavebands, wavelength_to_true_color_RGB,
+    #                                  "output\\indoorleaves_fullcolor.png", renormalize=True)
+    # hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB,
+    #                                  "output\\indoorleaves_onlyinfrared.png", renormalize=True)
+    hypercube.load_from_dot_hypercube("hypercubes\\lukesgadget\\lukesgadget.hypercube")
+    # hypercube.grayscale_average("output\\lukesgadget_average.png")
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,"output\\lukesgadget_truecolor.png", renormalize=True)
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB, "output\\lukesgadget_infrared.png", renormalize=True)
