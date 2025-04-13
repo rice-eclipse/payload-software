@@ -43,6 +43,27 @@ class Hypercube:
         hypercube = hypercube[:, :, sorted_idxs]
         self.__init__(hypercube, wavebands)
 
+
+    def load_from_dot_hypercube(self, filename):
+        # Load a hypercube from the .hypercube file that squareHSI actually exports
+        # Input: filename of .hypercube file
+        # Note that this modifices the existinging instance of Hypercube
+
+        # Hypercube format: Datetime, dimx, dimy, number of wavebands, every waveband as a float, actual data (all on a single line)
+
+        with open(filename, 'r') as datafile:
+            raw_csv = datafile.read()
+            data = raw_csv.split(",")
+            date_time = data[0]
+            width = data[1]
+            height = data[2]
+            num_wavebands = data[3]
+            wavebands = np.zeros((num_wavebands,1))
+            for i in range(num_wavebands):
+                wavebands[i,1] = data[i+4]
+            hypercube = np.zeros((width, height, num_wavebands))
+            for
+
     def wavelength_to_nearest_idx(self, wl):
         # Finds the nearest wavelength listed in wavebands and returns its index
         # Inputs:
