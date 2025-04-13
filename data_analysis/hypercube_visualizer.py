@@ -258,7 +258,6 @@ if __name__ == "__main__":
     #                                  "output\\indoorleaves_fullcolor.png", renormalize=True)
     # hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB,
     #                                  "output\\indoorleaves_onlyinfrared.png", renormalize=True)
-    hypercube.load_from_dot_hypercube("hypercubes\\lukesgadget\\lukesgadget.hypercube")
-    # hypercube.grayscale_average("output\\lukesgadget_average.png")
-    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,"output\\lukesgadget_truecolor.png", renormalize=True)
-    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB, "output\\lukesgadget_infrared.png", renormalize=True)
+    hypercube.load_from_dot_hypercube("hypercubes\\outdoor_trees_chimney_180EM\\outdoor_trees_chimney.hypercube")
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,"output\\outdoor_trees_chimney_180EM_truecolor.png", renormalize=True)
+
