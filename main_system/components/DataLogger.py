@@ -10,7 +10,7 @@ class DataLogger:
         unique_path = self.filepath
         while os.path.isfile(unique_path):
             counter += 1
-            unique_path = self.filepath[:-3] + '_' + str(counter) + '.py'
+            unique_path = self.filepath[:-4] + '_' + str(counter) + '.csv'
 
         self.filepath = unique_path
 
