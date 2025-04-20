@@ -45,24 +45,24 @@ class AeroImageStream:
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
 
-        if (type(timestamp) == str):
+        if (type(timeval) == str):
             timestamp = timeval
-        elif (type(timestamp) == int or type(timestamp) == float):
+        elif (type(timeval) == int or type(timeval) == float):
             timestamp = str(int(timeval))
         else:
             timestamp = 'TIMEUNDEF'
 
-        if (type(altstamp) == str):
+        if (type(altitude) == str):
             altstamp = altitude
-        elif (type(altstamp) == float or type(altstamp) == int):
+        elif (type(altitude) == float or type(altitude) == int):
             altstamp = f"{float(altitude):.2f}"
             altstamp = altstamp.replace('.', '_')
         else:
             altstamp = 'ALTUNDEF'
 
-        if (type(anglestamp) == str):
+        if (type(angle) == str):
             anglestamp = angle
-        elif (type(anglestamp) == float or type(anglestamp) == int):
+        elif (type(angle) == float or type(angle) == int):
             anglestamp = f"{float(angle):.2f}"
             anglestamp = anglestamp.replace('.', '_')
         else:
