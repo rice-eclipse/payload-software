@@ -3,7 +3,8 @@ import os
 
 from .ConfigLoader import ConfigLoader
 from .TimeClock import TimeClock
-from .AeroImageStream import AeroImageStream
+# from .AeroImageStream import AeroImageStream
+from .ArduImageStream import ArduImageStream
 # from .ImagerManager import ImagerManager
 from .StorageManager import StorageManager
 
@@ -34,7 +35,7 @@ class BigWrapper:
         self.accel_reader = AccelReader(self._sim_sensor_timeclock)
         self.temp_reader = TempReader()
 
-        self.image_stream = AeroImageStream(self.image_configs)
+        self.image_stream = ArduImageStream(self.image_configs)
         # self.imager_manager = ImagerManager(self.image_configs)
 
         self._general_timeclock = TimeClock()
