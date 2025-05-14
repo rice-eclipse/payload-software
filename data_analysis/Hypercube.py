@@ -253,14 +253,19 @@ def wavelength_to_true_color_RGB(wl_arr):
 
 if __name__ == "__main__":
     hypercube = Hypercube(None, None)
-    # hypercube.load_from_images("hypercubes\\indoorleaves")
-    # hypercube.grayscale_average("output\\indoorleaves_average.png")
-    # hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,
-    #                                  "output\\indorleaves_truecolor.png", renormalize=True)
-    # hypercube.image_from_wavelengths(hypercube.wavebands, wavelength_to_true_color_RGB,
-    #                                  "output\\indoorleaves_fullcolor.png", renormalize=True)
-    # hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB,
-    #                                  "output\\indoorleaves_onlyinfrared.png", renormalize=True)
-    hypercube.load_from_dot_hypercube("hypercubes\\outdoor_trees_chimney_180EM\\outdoor_trees_chimney.hypercube")
-    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands <= 750], wavelength_to_true_color_RGB,"output\\outdoor_trees_chimney_180EM_truecolor.png", renormalize=True)
+    hypercube_name = "whiteobjects"
+    hypercube.load_from_images(f"hypercubes\\{hypercube_name}")
+    hypercube.grayscale_average(f"output\\{hypercube_name}_average.png")
+    # hypercube.image_from_wavelengths(hypercube.wavebands[np.logical_xor(hypercube.wavebands < 502, hypercube.wavebands > 562)], wavelength_to_true_color_RGB,
+    #                                  f"output\\{hypercube_name}_no_502-562.png", renormalize=True)
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands < 750], wavelength_to_true_color_RGB,
+                                     f"output\\{hypercube_name}_truecolor.png", renormalize=True)
+    hypercube.image_from_wavelengths(hypercube.wavebands[hypercube.wavebands > 750], wavelength_to_true_color_RGB,
+                                     f"output\\{hypercube_name}_onlyinfrared.png", renormalize=True)
+    # hypercube.load_from_dot_hypercube("hypercubes\\outdoor_trees_chimney_180EM\\outdoor_trees_chimney.hypercube")
+    # # hypercube.grayscale_average("output\\outdoor_trees_chimney_180EM_average.png")
+    # # hypercube.image_from_wavelengths(hypercube.wavebands[np.logical_and(620 < hypercube.wavebands, hypercube.wavebands < 700)], wavelength_to_true_color_RGB,"output\\outdoor_trees_chimney_180EM_red.png", renormalize=True)
+    # hypercube.image_from_wavelengths(
+    #     hypercube.wavebands[np.logical_and(585 < hypercube.wavebands, hypercube.wavebands < 620)],
+    #     wavelength_to_true_color_RGB, "output\\outdoor_trees_chimney_180EM_truecolor_orange.png", renormalize=True)
 
