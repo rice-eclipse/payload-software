@@ -1,6 +1,6 @@
 from time import sleep
 from picamera2 import Picamera2
-import libcamera.controls as libcamera_controls
+import libcamera
 import os
 
 
@@ -74,17 +74,17 @@ class ArduImageStream:
             anglestamp = 'ANGLEUNDEF'
 
         metadata = self.camera.capture_metadata()  # This is most accurate
-        isostamp = f"{float(metadata["AnalogueGain"] * 100):.2f}"  # Note that libcamera2 cameras don't implement ISO by default
+        isostamp = f"{float(metadata['AnalogueGain'] * metadata['DigitalGain'] * 100):.2f}"  # Note that libcamera cameras don't implement ISO by default
         isostamp = isostamp.replace('.', '_')
-        shutterstamp = f"{float(metadata["ExposureTime"]):.2f}"  # Note that this is exposure time
-        awbredstamp = f"{float(metadata["ColourGains"][0]):.2f}"  # White Balance by a different name; otherwise identical
+        shutterstamp = f"{float(metadata['ExposureTime']):.2f}"  # Note that this is exposure time
+        awbredstamp = f"{float(metadata['ColourGains'][0]):.2f}"  # White Balance by a different name; otherwise identical
         awbredstamp = awbredstamp.replace('.', '_')
-        awbbluestamp = f"{float(metadata["ColourGains"][1]):.2f}"
+        awbbluestamp = f"{float(metadata['ColourGains'][1]):.2f}"
         awbbluestamp = awbbluestamp.replace('.', '_')
         awbstamp = f"[{awbredstamp}___{awbbluestamp}]"
 
         filename = f"{self.storagepath}/&ENVINFO&[{timestamp}&{altstamp}&{anglestamp}]&IMGINFO&{isostamp}&{shutterstamp}&WBINFO&{awbstamp}.jpg"
-        self.camera.capture(filename)
+        self.camera.capture_file(filename)
         return filename
 
     def capture_all(self, timeval, altitude, angle):
@@ -119,13 +119,14 @@ class ArduImageStream:
         self.storagepath = mode_configs['filepath']
         self.xres = mode_configs['xres']
         self.yres = mode_configs['yres']
-        self.camera.resolution = (self.xres, self.yres)
+        # self.camera.resolution = (self.xres, self.yres)
 
         if (mode_configs['exposure_mode'] == 'auto'):
-            self.camera.AeEnable = True
-            self.camera.AeExposureMode = libcamera_controls.AeExposureModeEnum.Short
-            self.camera.AwbEnable = True
-            self.camera.AwbMode = libcamera_controls.AwbModeEnum.Auto
+            with self.camera.controls as controls:
+                controls.AeEnable = True
+                controls.AeExposureMode = libcamera.controls.AeExposureModeEnum.Short
+                controls.AwbEnable = True
+                controls.AwbMode = libcamera.controls.AwbModeEnum.Auto
         else:
             with self.camera.controls as controls:
                 controls.AeEnable = False
@@ -134,3 +135,4 @@ class ArduImageStream:
                 # ^ Very rough calculation, but it's arbitrary/internal anyhow
                 # and I'd prefer to keep it simple and consistent with the image metadata
                 controls.AwbEnable = False
+                controls.ColourGains = (1.4, 3.0)  # this is at least closer to reality than (0.0,0.0)
