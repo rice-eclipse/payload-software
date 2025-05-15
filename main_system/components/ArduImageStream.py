@@ -27,10 +27,11 @@ class ArduImageStream:
         """
         self.camera = Picamera2()
         self.camera.configure("still")  # Initializes camera config
+        self.camera.controls.LensPosition = 4.1
         self.configs = configs
         self.camera_started = False  # We can save some power by not starting the camera until it's time to capture an image
 
-    def capture_image(self, timeval, altitude, angle, mode):
+    def capture_image(self, timeval, altitude, angle, mode_key):
         """
         Capture an image and save it to the specified storage path.
 
@@ -45,7 +46,7 @@ class ArduImageStream:
         """
         if not self.camera_started:
             self.camera.start()
-        self.set_mode(mode)
+        self.set_mode(mode_key)
 
         if not os.path.exists(self.storagepath):
             os.makedirs(self.storagepath)
@@ -97,6 +98,7 @@ class ArduImageStream:
             time (str): The timestamp of the image capture.
         """
         for mode_key in self.configs:
+            print(mode_key)
             self.capture_image(timeval, altitude, angle, mode_key)
 
     def close(self):

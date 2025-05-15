@@ -1,12 +1,28 @@
 {
-    "imaging_configs" : [
-        {
-            "filepath" : "./image_dump/Imager4A-Auto/",
+    "imaging_configs" : {
+        "auto" : {
+            "filepath" : "./image_dump/Draintest-Actv-Auto/",
             "xres" : 400,
             "yres" : 400,
             "exposure_mode" : "auto"
+        },
+        "diff" : {
+            "filepath" : "./image_dump/Draintest-Actv-Diff/",
+            "xres" : 400,
+            "yres" : 400,
+            "exposure_mode" : "manual",
+            "exposure" : 500000,
+            "iso" : 400
+        },
+        "center" : {
+            "filepath" : "./image_dump/Draintest-Actv-Center/",
+            "xres" : 400,
+            "yres" : 400,
+            "exposure_mode" : "manual",
+            "exposure": 100000,
+            "iso" : 400
         }
-    ],
+    },
     "exstate_configs" : {
         "imaging_max_angle" : 0.69,
         "ground_alt" : 50,
